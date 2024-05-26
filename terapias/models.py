@@ -28,18 +28,15 @@ class Fisioterapeutas(models.Model):
         return f"{self.nombre} {self.apellido}"
 
 # Modelo para Terapia
-class Terapia(models.Model):
+class Terapias(models.Model):
     terapiaID = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=255)
     fecha = models.DateField(null=True)
-    fisioterapeuta = models.ForeignKey(Fisioterapeuta, on_delete=models.CASCADE)
-    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    fisioterapeuta = models.ForeignKey(Fisioterapeutas, on_delete=models.CASCADE)
+    paciente = models.ForeignKey(Pacientes, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.nombre
 
 # Modelo para Movimiento
-class Movimiento(models.Model):
+class Movimientos(models.Model):
     movimientoID = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=255)
     url = models.URLField(max_length=255)
@@ -48,9 +45,10 @@ class Movimiento(models.Model):
         return self.nombre
 
 # Modelo para Sesiones
-class Sesion(models.Model):
+class Sesiones(models.Model):
     sesionID = models.AutoField(primary_key=True)
-    movimiento = models.ForeignKey(Movimiento, on_delete=models.CASCADE)
+    movimientoID = models.ForeignKey(Movimientos, on_delete=models.CASCADE)
+    terapiaID = models.ForeignKey(Terapias, on_delete=models.CASCADE)
     estado = models.BooleanField()  # Campo booleano para estado
     porcentaje = models.FloatField(null=True)  # Campo float para porcentaje
     repeticiones = models.CharField(max_length=255)
