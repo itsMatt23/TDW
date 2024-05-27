@@ -1,10 +1,12 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 import datetime
-from .models import Pacientes, Terapias, Fisioterapeutas
+from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones
 
-def gestion_paciente(request):
+def terapia_paciente(request):
     paciente = None
     terapias = None
+    cedula = request.POST.get('cedula', '') or request.GET.get('cedula', '')
+
 
     if request.method == 'POST':
         if 'buscar_paciente' in request.POST:
@@ -27,6 +29,15 @@ def gestion_paciente(request):
                 terapia = Terapias(fecha=fecha_actual, paciente=paciente, fisioterapeuta=terapeuta)
                 terapia.save()
 
+                for i in range(1, 6):
+                    movimiento = get_object_or_404(Movimientos, pk=i)
+                    sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="15")
+                    sesion.save()
+
+                terapias = Terapias.objects.filter(paciente=paciente)
+
+
+
                 # Recargar las terapias actualizadas del paciente después de la creación
                 terapias = Terapias.objects.filter(paciente=paciente)
 
@@ -47,7 +58,33 @@ def gestion_paciente(request):
             paciente = None
             terapias = None
 
-    return render(request, 'gestion_paciente.html', {
+    return render(request, 'terapias.html', {
         'paciente': paciente,
         'terapias': terapias,
+    })
+
+
+#Movimientos
+def movimientos(request, terapia_id):
+    terapia = get_object_or_404(Terapias, pk=terapia_id)
+    sesiones = Sesiones.objects.filter(terapiaID=terapia)
+    
+    return render(request, 'movimientos.html', {
+        'terapia': terapia,
+        'sesiones': sesiones,
+    })
+
+#Session
+def actualizar_sesion(request, sesion_id):
+    sesion = get_object_or_404(Sesiones, pk=sesion_id)
+    
+    if request.method == 'POST':
+        repeticiones = request.POST.get('repeticiones', '')
+        if repeticiones:
+            sesion.repeticiones = repeticiones
+            sesion.save()
+        return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
+
+    return render(request, 'movimientos.html', {
+        'sesion': sesion,
     })

@@ -54,4 +54,4 @@ class Sesiones(models.Model):
     repeticiones = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Sesión {self.sesionID} - Movimiento: {self.movimiento.nombre}"
+        return f"Sesión {self.sesionID} - Movimiento: {self.movimientoID.nombre}"

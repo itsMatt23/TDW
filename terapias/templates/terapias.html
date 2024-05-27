@@ -6,7 +6,7 @@
 <body>
     <h1>Gestión de Paciente</h1>
 
-    <form method="post" action="{% url 'gestion_paciente' %}">
+    <form method="post" action="{% url 'terapia_paciente' %}">
         {% csrf_token %}
         <label for="cedula">Cédula del Paciente:</label>
         <input type="text" id="cedula" name="cedula" required>
@@ -18,13 +18,13 @@
         <p>Nombre: {{ paciente.nombre1 }} {{ paciente.apellido1 }}</p>
         <p>Cédula: {{ paciente.cedula }}</p>
 
-        <form method="post" action="{% url 'gestion_paciente' %}">
+        <form method="post" action="{% url 'terapia_paciente' %}">
             {% csrf_token %}
             <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
             <button type="submit" name="crear_terapia">Crear Terapia</button>
         </form>
         
-        <form method="post" action="{% url 'gestion_paciente' %}">
+        <form method="post" action="{% url 'terapia_paciente' %}">
             {% csrf_token %}
             <button type="submit" name="limpiar_pantalla">Limpiar</button>
         </form>
@@ -34,12 +34,20 @@
         <ul>
             {% for terapia in terapias %}
                 <li> Terapia {{ forloop.counter }} - {{ terapia.fecha }} - Dr. {{ terapia.fisioterapeuta.apellido }}
-                    <form method="post" action="{% url 'gestion_paciente' %}">
+                    <form method="get" action="{% url 'movimientos' terapia.terapiaID %}">
+                        <button type="submit">Movimientos</button>
+                    </form>
+                    
+
+                    <form method="post" action="{% url 'terapia_paciente' %}">
                         {% csrf_token %}
                         <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
                         <input type="hidden" name="eliminar_terapia" value="{{ terapia.terapiaID }}">
                         <button type="submit">Eliminar</button>
                     </form>
+
+                    
+                    
                 </li>
             {% endfor %}
         </ul>

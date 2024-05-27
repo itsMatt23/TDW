@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movimientos de Terapia</title>
+</head>
+<body>
+    <h1>Movimientos de Terapia {{ terapia.terapiaID }}</h1>
+    <p><strong>Paciente:</strong> {{ terapia.paciente.nombre1 }} {{ terapia.paciente.apellido1 }}</p>
+    <p><strong>Terapeuta:</strong> Dr. {{ terapia.fisioterapeuta.apellido }}</p>
+    <p><strong>Fecha:</strong> {{ terapia.fecha }}</p>
+    <button onclick="window.history.back()">Volver a atrás</button>
+
+    <ul>
+        {% for sesion in sesiones %}
+            <li>
+                {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }}
+                <form method="post" action="{% url 'actualizar_sesion' sesion.sesionID %}">
+                    {% csrf_token %}
+                    <input type="checkbox">
+                    <label for="repeticiones">Repeticiones:</label>
+                    <input type="number" id="repeticiones" name="repeticiones" value="{{ sesion.repeticiones }}" min="10" max="20">
+                    <button type="submit">Actualizar</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
+
