@@ -75,16 +75,31 @@ def movimientos(request, terapia_id):
     })
 
 #Session
-def actualizar_sesion(request, sesion_id):
-    sesion = get_object_or_404(Sesiones, pk=sesion_id)
+#def actualizar_sesion(request, sesion_id):
+ #   sesion = get_object_or_404(Sesiones, pk=sesion_id)
     
+  #  if request.method == 'POST':
+   #     repeticiones = request.POST.get('repeticiones', '')
+    #    if repeticiones:
+     #       sesion.repeticiones = repeticiones
+      #      sesion.save()
+       # return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
+
+    #return render(request, 'movimientos.html', {
+     #   'sesion': sesion,
+    #})
+
+def actualizar_sesiones(request):
     if request.method == 'POST':
-        repeticiones = request.POST.get('repeticiones', '')
-        if repeticiones:
-            sesion.repeticiones = repeticiones
+        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
+        for sesion_id in sesiones_seleccionadas:
+            sesion = Sesiones.objects.get(pk=sesion_id)
+            sesion.estado = True  # Actualiza el estado de la sesión seleccionada
+            sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
             sesion.save()
         return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
+    
+    else:
+        # Manejo si el método no es POST (opcional dependiendo de la lógica deseada)
+        pass
 
-    return render(request, 'movimientos.html', {
-        'sesion': sesion,
-    })

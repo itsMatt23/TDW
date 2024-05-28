@@ -9,22 +9,46 @@
     <p><strong>Terapeuta:</strong> Dr. {{ terapia.fisioterapeuta.apellido }}</p>
     <p><strong>Fecha:</strong> {{ terapia.fecha }}</p>
     <button onclick="window.history.back()">Volver a atrás</button>
-
-    <ul>
-        {% for sesion in sesiones %}
-            <li>
-                {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }}
-                <form method="post" action="{% url 'actualizar_sesion' sesion.sesionID %}">
-                    {% csrf_token %}
-                    <input type="checkbox">
-                    <label for="repeticiones">Repeticiones:</label>
-                    <input type="number" id="repeticiones" name="repeticiones" value="{{ sesion.repeticiones }}" min="10" max="20">
-                    <button type="submit">Actualizar</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+    
+    <form method="post" action="{% url 'actualizar_sesiones' %}">
+        {% csrf_token %}
+        <ul>
+            {% with count_true=0 %}
+                {% for sesion in sesiones %}
+                    {% if sesion.estado %}
+                        {% with count_true=count_true|add:1 %}
+                            <li>
+                                {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }} - Estado: {{ sesion.estado }}
+                                <input type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}" checked disabled>
+                                <label for="repeticiones">Repeticiones:</label>
+                                <input type="number" id="repeticiones" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20" disabled>
+                            </li>
+                        {% endwith %}
+                    {% else %}
+                        <li>
+                            {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }} - Estado: {{ sesion.estado }}
+                            <input type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}">
+                            <label for="repeticiones">Repeticiones:</label>
+                            <input type="number" id="repeticiones" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20">
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+        </ul>
+    
+        {% if count_true >= 5 %}
+            <p>Ya has marcado el máximo de sesiones.</p>
+            <button type="submit" disabled>Actualizar Estados</button>
+        {% else %}
+            <button type="submit">Actualizar Estados</button>
+        {% endif %}
+    </form>
+    
+    
 
 </body>
 </html>
+
+
+
 
