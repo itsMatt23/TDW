@@ -10,7 +10,7 @@ class Pacientes(models.Model):
     celular = models.CharField(max_length=10, blank=True, null=True)
     direccion = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=255)
-    contrasena = models.CharField(max_length=255)
+    #contrasena = models.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.nombre1} {self.apellido1}"

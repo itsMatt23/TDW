@@ -74,21 +74,6 @@ def movimientos(request, terapia_id):
         'sesiones': sesiones,
     })
 
-#Session
-#def actualizar_sesion(request, sesion_id):
- #   sesion = get_object_or_404(Sesiones, pk=sesion_id)
-    
-  #  if request.method == 'POST':
-   #     repeticiones = request.POST.get('repeticiones', '')
-    #    if repeticiones:
-     #       sesion.repeticiones = repeticiones
-      #      sesion.save()
-       # return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
-
-    #return render(request, 'movimientos.html', {
-     #   'sesion': sesion,
-    #})
-
 def actualizar_sesiones(request):
     if request.method == 'POST':
         sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
@@ -102,4 +87,40 @@ def actualizar_sesiones(request):
     else:
         # Manejo si el método no es POST (opcional dependiendo de la lógica deseada)
         pass
+
+###########################################################################
+#Pacientes
+def pacientes(request):
+    pacientes = Pacientes.objects.all()
+    if request.method == 'POST':
+        if 'create' in request.POST:
+            Pacientes.objects.create(
+                cedula=request.POST['cedula'],
+                nombre1=request.POST['nombre1'],
+                nombre2=request.POST.get('nombre2', ''),
+                apellido1=request.POST['apellido1'],
+                apellido2=request.POST.get('apellido2', ''),
+                celular=request.POST.get('celular', ''),
+                direccion=request.POST.get('direccion', ''),
+                email=request.POST['email']
+                #contrasena=request.POST['contrasena']
+            )
+
+        elif 'update' in request.POST:
+            patient = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            patient.nombre1 = request.POST['nombre1']
+            patient.nombre2 = request.POST.get('nombre2', '')
+            patient.apellido1 = request.POST['apellido1']
+            patient.apellido2 = request.POST.get('apellido2', '')
+            patient.celular = request.POST.get('celular', '')
+            patient.direccion = request.POST.get('direccion', '')
+            patient.email = request.POST['email']
+            #patient.contrasena = request.POST['contrasena']
+            patient.save()
+        elif 'delete' in request.POST:
+            patient = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            patient.delete()
+        return redirect('pacientes')
+
+    return render(request, 'pacientes.html', {'pacientes': pacientes})
 
