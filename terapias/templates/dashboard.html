@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        .row {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .c-container {
+            flex: 0 1 auto;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .c-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .chart-container {
+            flex: 0 1 800px;
+            margin: 20px;
+        }
+        #m1, .chart-container {
+            text-align: center;
+        }
+        .card-body {
+            text-align: center;
+        }
+        .display-4 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #343a40;
+        }
+        
+        .btn-celeste {
+            background-color: #00aaff;
+            border: none;
+        }
+        .btn-celeste:hover {
+            background-color: #007bff;
+        }
+        .input-group {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            background-color: #00aaff;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <a class="navbar-brand text-celeste" href="#">
+                <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                Terapias
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'pacientes' %}">Pacientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar
+                            Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <br><br>
+        
+        <div class="container mt-5">
+            <div class="row justify-content-center my-4">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar paciente" id="buscarPaciente">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Asistencia por Mes</h5>
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Terapias Correctas vs Incorrectas</h5>
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Paciente</h5>
+                            <p class="card-text">Cédula: 128932014</p>
+                            <p class="card-text">Nombre: Javier</p>
+                            <p class="card-text">Apellido: Apellido</p>
+                        </div>
+                    </div>
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Total de Terapias</h5>
+                            <p class="display-4">20</p>
+                        </div>
+                    </div>
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Terapias Correctas</h5>
+                            <p class="display-4">15</p>
+                        </div>
+                    </div>
+                    <div class="card c-container">
+                        <div class="card-body">
+                            <h5 class="card-title">Terapias Incorrectas</h5>
+                            <p class="display-4">5</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
+            <div class="container p-4">
+                <div class="row">
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <h4 class="text-uppercase text-white">Síguenos en nuestras redes sociales!</h4>
+                        <a href="#"><img src="{% static 'imagenes/facebook.png' %}" alt="Facebook" width="70" height="70" /></a>
+                        <a href="#"><img src="{% static 'imagenes/twitter.png' %}" alt="Twitter" width="92" height="92" /></a>
+                        <a href="#"><img src="{% static 'imagenes/instagram.png' %}" alt="Instagram" width="110" height="80" /></a>
+                    </div>
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <p class="text-white">&copy; 2024 Terapias. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Modal: Cerrar Sesión -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">¿Listo para salir?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecciona "Cerrar Sesión" a continuación si estás listo para finalizar tu sesión actual.</div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                        <a class="btn btn-primary" href="{% url 'logout' %}">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
+    <script>
+        var data = {
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+            datasets: [{
+                label: 'Asistencia',
+                data: [2, 1, 3, 4, 2, 5, 6, 3, 2, 4, 5, 6],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var config = {
+            type: 'line',
+            data: data,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                aspectRatio: 2
+            }
+        };
+
+        var comparisonData = {
+            labels: ['Correctas', 'Incorrectas'],
+            datasets: [{
+                data: [15, 5],
+                backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                borderWidth: 1
+            }]
+        };
+
+        var comparisonConfig = {
+            type: 'bar',
+            data: comparisonData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                aspectRatio: 2
+            }
+        };
+
+        var myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+
+        var comparisonChart = new Chart(
+            document.getElementById('comparisonChart'),
+            comparisonConfig
+        );
+    </script>
+</body>
+
+</html>

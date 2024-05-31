@@ -1,0 +1,443 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terapias</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .btn-celeste {
+            background-color: #02B1F4;
+            border: none;
+            color: white;
+        }
+
+        .btn-celeste:hover {
+            background-color: #0197D4;
+        }
+
+        .btn-primary, .btn-outline-secondary, .btn-primary:hover {
+            background-color: #00aaff;
+            border: none;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #00aaff;
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: #00aaff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 170, 255, 0.25);
+        }
+
+        /* Estilo de mapa */
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .container-map {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-info {
+            width: 30%;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #02B1F4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50%;
+            display: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-scroll-top:hover {
+            background-color: #0197D4;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        /* Animaciones y estilos mejorados */
+        .modal-content {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slide-down 0.5s ease-out;
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background-color: #00aaff;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+        }
+
+        .input-group-text {
+            background-color: #00aaff;
+            color: white;
+            border: none;
+        }
+
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            filter: invert(1);
+        }
+
+        /* Sección de servicios */
+        .card {
+            transition: transform 0.3s;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card-body i {
+            color: #00aaff;
+            transition: color 0.3s;
+        }
+
+        .card:hover .card-body i {
+            color: #007bff;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #00aaff;
+            color: white;
+        }
+
+        footer a {
+            color: white;
+        }
+
+        footer a:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay" class="overlay">
+        <div id="welcome-message" class="welcome-message">
+            <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="250">
+            <h1>Bienvenido</h1>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column min-vh-100">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <a class="navbar-brand text-celeste" href="#">
+                <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                Terapias
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#loginModal">Iniciar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container flex-grow-1 mt-5 pt-5">
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <h1 class="display-4">¿Tienes algún problema?</h1>
+                    <p class="lead">En nuestro centro de terapia de manos, nos especializamos en ayudarte a recuperar la funcionalidad y el bienestar de tus manos. Nuestro equipo de terapeutas altamente capacitados está aquí para ofrecerte soluciones personalizadas y efectivas.</p>
+                    <button class="btn btn-celeste text-white" data-toggle="modal" data-target="#loginModal">Probar</button>
+                </div>
+                <div class="col-md-6">
+                    <img src="{% static 'imagenes/manodolor.png' %}" class="img-fluid" alt="Problema">
+                </div>
+            </div>
+            <div class="row bg-light py-5">
+                <div class="col-md-6">
+                    <img src="{% static 'imagenes/smiling-therapist.png' %}" class="img-fluid" alt="Encontrar">
+                </div>
+                <div class="col-md-6">
+                    <h1 class="display-4">Encuéntranos</h1>
+                    <p class="lead">Nos enorgullecemos de contar con un equipo altamente capacitado y comprometido con tu bienestar. Nuestros terapeutas especializados están listos para brindarte la atención que necesitas.</p>
+                    <button class="btn btn-celeste text-white" onclick="scrollToBottom()">Encontrarnos</button>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h1 class="display-4 text-center">Nuestros Servicios</h1>
+                    <div class="card-deck mt-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-dumbbell fa-3x mb-3"></i>
+                                <h5 class="card-title">Terapia de Ejercicio</h5>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-hand-rock fa-3x mb-3"></i>
+                                <h5 class="card-title">Terapia de Movimiento</h5>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-shower fa-3x mb-3"></i>
+                                <h5 class="card-title">Hidro Terapia</h5>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-balance-scale fa-3x mb-3"></i>
+                                <h5 class="card-title">Terapia de Equilibrio</h5>
+                            </div>
+                        </div>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-hand-paper fa-3x mb-3"></i>
+                                <h5 class="card-title">Terapia de Masaje</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h1 class="display-4 text-center">Conócenos</h1>
+                    <div id="imageCarousel" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img src="{% static 'imagenes/mano1.jpg' %}" class="d-block w-100" alt="...">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="{% static 'imagenes/mano2.jpg' %}" class="d-block w-100" alt="...">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="{% static 'imagenes/mano3.jpg' %}" class="d-block w-100" alt="...">
+                            </div>
+                        </div>
+                        <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container mt-5" id="contact">
+                <h1 class="display-4 text-center">Ubicación</h1>
+                <div class="container-map">
+                    <div id="map"></div>
+                    <div class="contact-info">
+                        <h3>Contáctanos</h3>
+                        <p><i class="fas fa-phone"></i> Teléfono: 123-456-7890</p>
+                        <p><i class="fas fa-mobile-alt"></i> Celular: 098-765-4321</p>
+                        <p><i class="fas fa-envelope"></i> Correo: info@fisioabled.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Dirección: Calle Ejemplo 123, Ambato, Ecuador</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn-scroll-top" onclick="scrollToTop()">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+
+        <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
+            <div class="container p-4">
+                <div class="row">
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <h4 class="text-uppercase text-white">Síguenos en nuestras redes sociales!</h4>
+                        <a href="#"><img src="{% static 'imagenes/facebook.png' %}" alt="Facebook" width="70" height="70" /></a>
+                        <a href="#"><img src="{% static 'imagenes/twitter.png' %}" alt="Twitter" width="92" height="92" /></a>
+                        <a href="#"><img src="{% static 'imagenes/instagram.png' %}" alt="Instagram" width="110" height="80" /></a>
+                    </div>
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <p class="text-white">&copy; 2024 Terapias. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <a class="navbar-brand mx-auto" href="#">
+                    <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="150">
+                </a>
+                <div class="modal-body">
+                    <form id="loginForm" method="post" action="{% url 'index' %}">
+                        {% csrf_token %}
+                        <div id="error-message" class="error-message"></div>
+                        <div class="form-group">
+                            <label for="username">Correo electrónico</label>
+                            <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp" placeholder="Ingresa tu correo electrónico">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const overlay = document.getElementById("overlay");
+            const welcomeMessage = document.getElementById("welcome-message");
+
+            if (welcomeMessage) {
+                welcomeMessage.addEventListener("animationend", function () {
+                    overlay.style.opacity = '0';
+                    setTimeout(function () {
+                        overlay.style.display = 'none';
+                    }, 800);
+                });
+            }
+
+            const togglePassword = document.querySelector("#togglePassword");
+            const password = document.querySelector("#password");
+
+            if (togglePassword && password) {
+                togglePassword.addEventListener("click", function () {
+                    const type = password.getAttribute("type") === "password" ? "text" : "password";
+                    password.setAttribute("type", type);
+
+                    this.classList.toggle("fa-eye");
+                    this.classList.toggle("fa-eye-slash");
+                });
+            }
+
+            var map = L.map('map').setView([-1.254340, -78.622850], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(map);
+
+            L.marker([-1.254340, -78.622850]).addTo(map)
+                .bindPopup('Estamos Aquí!!')
+                .openPopup();
+        });
+
+        window.onscroll = function () {
+            const btnScrollTop = document.querySelector(".btn-scroll-top");
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                btnScrollTop.style.display = "block";
+            } else {
+                btnScrollTop.style.display = "none";
+            }
+        };
+
+        window.scrollToBottom = function () {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function scrollToTop() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+
+        // AJAX form submission
+        $('#loginForm').on('submit', function(event) {
+            event.preventDefault();
+            const $form = $(this);
+            const $errorMessage = $('#error-message');
+
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: $form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = '/' + response.redirect_url;
+                    } else {
+                        $errorMessage.text(response.error).show();
+                    }
+                },
+                error: function(response) {
+                    $errorMessage.text(response.responseJSON.error).show();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
