@@ -78,7 +78,7 @@ def terapia_paciente(request):
             if paciente_id:
                 paciente = get_object_or_404(Pacientes, pk=paciente_id)
                 # Aquí deberías tener la lógica para seleccionar un terapeuta, por ejemplo:
-                terapeuta = get_object_or_404(Fisioterapeutas, cedula="0987654321")
+                terapeuta = get_object_or_404(Fisioterapeutas, cedula="1800000000")
                 # Para simplificar, supongamos que ya tienes el terapeuta seleccionado
 
                 fecha_actual = datetime.date.today()
