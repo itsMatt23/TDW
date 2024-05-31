@@ -9,7 +9,7 @@
     <form method="post" action="{% url 'terapia_paciente' %}">
         {% csrf_token %}
         <label for="cedula">Cédula del Paciente:</label>
-        <input type="text" id="cedula" name="cedula" required>
+        <input type="number" maxlength="10" id="cedula" name="cedula" required>
         <button type="submit" name="buscar_paciente">Buscar Paciente</button>
     </form>
 
@@ -56,4 +56,14 @@
         {% endif %}
     {% endif %}
 </body>
+
 </html>
+
+
+<script>
+    function limitarLongitud(input, maxLength) {
+        if (input.value.length > maxLength) {
+            input.value = input.value.slice(0, maxLength); // Recorta el valor hasta el maxLength
+        }
+    }
+    </script>

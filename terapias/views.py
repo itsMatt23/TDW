@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 import datetime
 from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones
+from django.contrib import messages
 
 def terapia_paciente(request):
     paciente = None
     terapias = None
     cedula = request.POST.get('cedula', '') or request.GET.get('cedula', '')
-
 
     if request.method == 'POST':
         if 'buscar_paciente' in request.POST:
@@ -63,6 +63,19 @@ def terapia_paciente(request):
         'terapias': terapias,
     })
 
+def gestion_paciente(request, cedula):
+    try:
+        paciente = Pacientes.objects.get(cedula=cedula)
+        terapias = Terapias.objects.filter(paciente=paciente)
+    except Pacientes.DoesNotExist:
+        paciente = None
+        terapias = None
+
+    return render(request, 'terapias.html', {
+            'paciente': paciente,
+            'terapias': terapias,
+        })
+
 
 #Movimientos
 def movimientos(request, terapia_id):
@@ -76,12 +89,14 @@ def movimientos(request, terapia_id):
 
 def actualizar_sesiones(request):
     if request.method == 'POST':
+
         sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
         for sesion_id in sesiones_seleccionadas:
             sesion = Sesiones.objects.get(pk=sesion_id)
             sesion.estado = True  # Actualiza el estado de la sesión seleccionada
             sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
             sesion.save()
+
         return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
     
     else:
@@ -92,35 +107,65 @@ def actualizar_sesiones(request):
 #Pacientes
 def pacientes(request):
     pacientes = Pacientes.objects.all()
+    if 'cedula' in request.GET:
+        cedula = request.GET['cedula']
+        pacientes = pacientes.filter(cedula__icontains=cedula)
+
     if request.method == 'POST':
         if 'create' in request.POST:
-            Pacientes.objects.create(
-                cedula=request.POST['cedula'],
-                nombre1=request.POST['nombre1'],
-                nombre2=request.POST.get('nombre2', ''),
-                apellido1=request.POST['apellido1'],
-                apellido2=request.POST.get('apellido2', ''),
-                celular=request.POST.get('celular', ''),
-                direccion=request.POST.get('direccion', ''),
-                email=request.POST['email']
-                #contrasena=request.POST['contrasena']
-            )
+            #Validar que no se ingrese cedula repetida
+            cedula = request.POST['cedula']
+            if Pacientes.objects.filter(cedula=cedula).exists():
+                messages.error(request, f'La cédula {cedula} ya está en uso.')
+
+            else:
+                Pacientes.objects.create(
+                    cedula=request.POST['cedula'],
+                    nombre1=request.POST['nombre1'],
+                    nombre2=request.POST.get('nombre2', ''),
+                    apellido1=request.POST['apellido1'],
+                    apellido2=request.POST.get('apellido2', ''),
+                    celular=request.POST.get('celular', ''),
+                    direccion=request.POST.get('direccion', ''),
+                    email=request.POST['email']
+                    #contrasena=request.POST['contrasena']
+                )
+            
 
         elif 'update' in request.POST:
-            patient = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
-            patient.nombre1 = request.POST['nombre1']
-            patient.nombre2 = request.POST.get('nombre2', '')
-            patient.apellido1 = request.POST['apellido1']
-            patient.apellido2 = request.POST.get('apellido2', '')
-            patient.celular = request.POST.get('celular', '')
-            patient.direccion = request.POST.get('direccion', '')
-            patient.email = request.POST['email']
-            #patient.contrasena = request.POST['contrasena']
-            patient.save()
+            patiente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            patiente.nombre1 = request.POST['nombre1']
+            patiente.nombre2 = request.POST.get('nombre2', '')
+            patiente.apellido1 = request.POST['apellido1']
+            patiente.apellido2 = request.POST.get('apellido2', '')
+            patiente.celular = request.POST.get('celular', '')
+            patiente.direccion = request.POST.get('direccion', '')
+            patiente.email = request.POST['email']
+            #patiente.contrasena = request.POST['contrasena']
+            patiente.save()
         elif 'delete' in request.POST:
-            patient = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
-            patient.delete()
+            patiente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            patiente.delete()
+
         return redirect('pacientes')
 
     return render(request, 'pacientes.html', {'pacientes': pacientes})
 
+
+# Actualizar movimientos
+def gestion_movimiento(request):
+    movimientos = Movimientos.objects.all()
+    movimiento_seleccionado = None
+
+    if request.method == 'POST':
+        movimiento_id = request.POST.get('movimiento')
+        movimiento_seleccionado = get_object_or_404(Movimientos, movimientoID=movimiento_id)
+        
+        movimiento_seleccionado.nombre = request.POST['nombre']
+        movimiento_seleccionado.url = request.POST['url']
+        movimiento_seleccionado.save()
+
+    return render(request, 'gestion_movimiento.html', {
+        'movimientos': movimientos,
+        'movimiento_seleccionado': movimiento_seleccionado,
+    })

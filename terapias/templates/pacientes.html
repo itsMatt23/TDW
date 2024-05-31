@@ -7,7 +7,30 @@
 <body>
     <div class="container">
         <h2>Lista de Pacientes</h2>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#createModal">Crear Paciente</button>
+
+        <!-- Formulario de Búsqueda -->
+        <form method="get" action="{% url 'pacientes' %}" class="mb-4">
+            <div class="input-group">
+                <input type="number" maxlength="10" class="form-control" placeholder="Buscar por cédula..." name="cedula" value="{{ request.GET.cedula }}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </div>
+                <div class="input-group-append">
+                    <a href="{% url 'pacientes' %}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </div>
+            
+        </form>
+
+        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#createModal">Crear Paciente</button>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <table class="table">
             <thead>
                 <tr>
@@ -21,22 +44,26 @@
                 </tr>
             </thead>
             <tbody>
-                {% for patient in pacientes %}
+                {% if pacientes %}
+
+                {% for paciente in pacientes %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ patient.cedula }}</td>
-                    <td>{{ patient.nombre1 }}</td>
-                    <td>{{ patient.apellido1 }}</td>
-                    <td>{{ patient.celular }}</td>
-                    <td>{{ patient.direccion }}</td>
+                    <td>{{ paciente.cedula }}</td>
+                    <td>{{ paciente.nombre1 }}</td>
+                    <td>{{ paciente.apellido1 }}</td>
+                    <td>{{ paciente.celular }}</td>
+                    <td>{{ paciente.direccion }}</td>
+
                     <td>
-                        <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal-{{ patient.cedula }}">Actualizar</button>
-                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal-{{ patient.cedula }}">Eliminar</button>
+                        <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal-{{ paciente.cedula }}">Actualizar</button>
+                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal-{{ paciente.cedula }}">Eliminar</button>
+                        <a href="{% url 'gestion_paciente' paciente.cedula %}" class="btn btn-primary">Terapias</a>
                     </td>
                 </tr>
 
                 <!-- Update Modal -->
-                <div class="modal fade" id="updateModal-{{ patient.cedula }}" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal fade" id="updateModal-{{ paciente.cedula }}" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -48,35 +75,35 @@
                             <div class="modal-body">
                                 <form method="post" action="{% url 'pacientes' %}">
                                     {% csrf_token %}
-                                    <input type="hidden" name="cedula" value="{{ patient.cedula }}">
+                                    <input type="hidden" name="cedula" value="{{ paciente.cedula }}">
                                     <input type="hidden" name="update" value="1">
                                     <div class="form-group">
                                         <label for="nombre1">Nombre 1:</label>
-                                        <input type="text" class="form-control" name="nombre1" value="{{ patient.nombre1 }}">
+                                        <input type="text" class="form-control" name="nombre1" value="{{ paciente.nombre1 }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="nombre2">Nombre 2:</label>
-                                        <input type="text" class="form-control" name="nombre2" value="{{ patient.nombre2 }}">
+                                        <input type="text" class="form-control" name="nombre2" value="{{ paciente.nombre2 }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="apellido1">Apellido 1:</label>
-                                        <input type="text" class="form-control" name="apellido1" value="{{ patient.apellido1 }}">
+                                        <input type="text" class="form-control" name="apellido1" value="{{ paciente.apellido1 }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="apellido2">Apellido 2:</label>
-                                        <input type="text" class="form-control" name="apellido2" value="{{ patient.apellido2 }}">
+                                        <input type="text" class="form-control" name="apellido2" value="{{ paciente.apellido2 }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="celular">Celular:</label>
-                                        <input type="text" class="form-control" name="celular" value="{{ patient.celular }}">
+                                        <input type="number" oninput="limitarLongitud(this, 10)" class="form-control" name="celular" value="{{ paciente.celular }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="direccion">Dirección:</label>
-                                        <input type="text" class="form-control" name="direccion" value="{{ patient.direccion }}">
+                                        <input type="text" class="form-control" name="direccion" value="{{ paciente.direccion }}">
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email:</label>
-                                        <input type="email" class="form-control" name="email" value="{{ patient.email }}">
+                                        <input type="email" class="form-control" name="email" value="{{ paciente.email }}">
                                     </div>
                                     
                                     <button type="submit" class="btn btn-primary">Guardar cambios</button>
@@ -87,7 +114,7 @@
                 </div>
 
                 <!-- Delete Modal -->
-                <div class="modal fade" id="deleteModal-{{ patient.cedula }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal fade" id="deleteModal-{{ paciente.cedula }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -97,12 +124,12 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                ¿Está seguro que desea eliminar a {{ patient.nombre1 }} {{ patient.apellido1 }}?
+                                ¿Está seguro que desea eliminar a {{ paciente.nombre1 }} {{ paciente.apellido1 }}?
                             </div>
                             <div class="modal-footer">
                                 <form method="post" action="{% url 'pacientes' %}">
                                     {% csrf_token %}
-                                    <input type="hidden" name="cedula" value="{{ patient.cedula }}">
+                                    <input type="hidden" name="cedula" value="{{ paciente.cedula }}">
                                     <input type="hidden" name="delete" value="1">
                                     <button type="submit" class="btn btn-danger">Eliminar</button>
                                 </form>
@@ -112,6 +139,12 @@
                     </div>
                 </div>
                 {% endfor %}
+                
+                {% else %}
+                    <tr>
+                        <td colspan="7">No se encontraron pacientes con la cédula ingresada.</td>
+                    </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
@@ -130,9 +163,10 @@
                     <form method="post" action="{% url 'pacientes' %}">
                         {% csrf_token %}
                         <input type="hidden" name="create" value="1">
+
                         <div class="form-group">
                             <label for="cedula">Cédula:</label>
-                            <input type="text" class="form-control" name="cedula">
+                            <input type="number" class="form-control" name="cedula">
                         </div>
                         <div class="form-group">
                             <label for="nombre1">Nombre 1:</label>
@@ -152,7 +186,7 @@
                         </div>
                         <div class="form-group">
                             <label for="celular">Celular:</label>
-                            <input type="text" class="form-control" name="celular">
+                            <input type="number" oninput="limitarLongitud(this, 10)" class="form-control" name="celular">
                         </div>
                         <div class="form-group">
                             <label for="direccion">Dirección:</label>
@@ -175,3 +209,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+<script>
+    function limitarLongitud(input, maxLength) {
+        if (input.value.length > maxLength) {
+            input.value = input.value.slice(0, maxLength); // Recorta el valor hasta el maxLength
+        }
+    }
+    </script>
