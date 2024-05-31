@@ -56,6 +56,14 @@
         {% endif %}
     {% endif %}
 </body>
+
 </html>
 
 
+<script>
+    function limitarLongitud(input, maxLength) {
+        if (input.value.length > maxLength) {
+            input.value = input.value.slice(0, maxLength); // Recorta el valor hasta el maxLength
+        }
+    }
+    </script>

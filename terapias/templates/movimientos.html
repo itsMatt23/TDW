@@ -4,6 +4,8 @@
     <title>Movimientos de Terapia</title>
 </head>
 <body>
+    <a href="{% url 'gestion_movimiento' %}">Movimientos</a>
+
     <h1>Movimientos de Terapia {{ terapia.terapiaID }}</h1>
     <p><strong>Paciente:</strong> {{ terapia.paciente.nombre1 }} {{ terapia.paciente.apellido1 }}</p>
     <p><strong>Terapeuta:</strong> Dr. {{ terapia.fisioterapeuta.apellido }}</p>
@@ -18,7 +20,7 @@
                     {% if sesion.estado %}
                         {% with count_true=count_true|add:1 %}
                             <li>
-                                {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }} - Estado: {{ sesion.estado }}
+                                {{ sesion.movimientoID.nombre }}
                                 <input type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}" checked disabled>
                                 <label for="repeticiones">Repeticiones:</label>
                                 <input type="number" id="repeticiones" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20" disabled>
@@ -26,7 +28,7 @@
                         {% endwith %}
                     {% else %}
                         <li>
-                            {{ sesion.movimientoID.nombre }} - Repeticiones: {{ sesion.repeticiones }} - Estado: {{ sesion.estado }}
+                            {{ sesion.movimientoID.nombre }} 
                             <input type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}">
                             <label for="repeticiones">Repeticiones:</label>
                             <input type="number" id="repeticiones" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20">
@@ -42,9 +44,8 @@
         {% else %}
             <button type="submit">Actualizar Estados</button>
         {% endif %}
+        
     </form>
-    
-    
 
 </body>
 </html>

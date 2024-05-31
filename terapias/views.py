@@ -76,6 +76,7 @@ def gestion_paciente(request, cedula):
             'terapias': terapias,
         })
 
+
 #Movimientos
 def movimientos(request, terapia_id):
     terapia = get_object_or_404(Terapias, pk=terapia_id)
@@ -88,12 +89,14 @@ def movimientos(request, terapia_id):
 
 def actualizar_sesiones(request):
     if request.method == 'POST':
+
         sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
         for sesion_id in sesiones_seleccionadas:
             sesion = Sesiones.objects.get(pk=sesion_id)
             sesion.estado = True  # Actualiza el estado de la sesión seleccionada
             sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
             sesion.save()
+
         return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
     
     else:
@@ -148,3 +151,21 @@ def pacientes(request):
 
     return render(request, 'pacientes.html', {'pacientes': pacientes})
 
+
+# Actualizar movimientos
+def gestion_movimiento(request):
+    movimientos = Movimientos.objects.all()
+    movimiento_seleccionado = None
+
+    if request.method == 'POST':
+        movimiento_id = request.POST.get('movimiento')
+        movimiento_seleccionado = get_object_or_404(Movimientos, movimientoID=movimiento_id)
+        
+        movimiento_seleccionado.nombre = request.POST['nombre']
+        movimiento_seleccionado.url = request.POST['url']
+        movimiento_seleccionado.save()
+
+    return render(request, 'gestion_movimiento.html', {
+        'movimientos': movimientos,
+        'movimiento_seleccionado': movimiento_seleccionado,
+    })
