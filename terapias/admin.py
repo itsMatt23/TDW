@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pacientes, Fisioterapeutas, Terapias, Movimientos, Sesiones, Motivos
+from .models import Pacientes, Fisioterapeutas, Terapias, Movimientos, Sesiones, Motivos, Rehabilitaciones
 
 # Registro de modelos en el admin
 @admin.register(Pacientes)
@@ -14,19 +14,25 @@ class FisioterapeutasAdmin(admin.ModelAdmin):
 
 @admin.register(Terapias)
 class TerapiasAdmin(admin.ModelAdmin):
-    list_display = ['terapiaID', 'fecha', 'fisioterapeuta', 'paciente']
+    list_display = ['terapiaID', 'fecha']
     list_filter = ['fecha']
 
 @admin.register(Movimientos)
 class MovimientosAdmin(admin.ModelAdmin):
     list_display = ['movimientoID', 'nombre', 'url']
 
-@admin.register(Motivos)
-class MovtivosAdmin(admin.ModelAdmin):
-    list_display = ['motivoID', 'nombre']
-
 @admin.register(Sesiones)
 class SesionesAdmin(admin.ModelAdmin):
     list_display = ['sesionID', 'movimientoID', 'terapiaID', 'estado', 'porcentaje', 'repeticiones']
     list_filter = ['estado']
-    search_fields = ['movimientoID__nombre', 'terapiaID__nombre']
+    search_fields = ['movimientoID__nombre', 'terapiaID__rehabilitacionID__paciente__nombre1', 'terapiaID__rehabilitacionID__paciente__apellido1']
+
+@admin.register(Motivos)
+class MotivosAdmin(admin.ModelAdmin):
+    list_display = ['motivoID', 'nombre']
+
+@admin.register(Rehabilitaciones)
+class RehabilitacionesAdmin(admin.ModelAdmin):
+    list_display = ['rehabilitacionID', 'motivoID', 'fechaInicio', 'fechaFin', 'fisioterapeuta', 'paciente']
+    list_filter = ['fechaInicio', 'fechaFin']
+    search_fields = ['motivoID__nombre', 'fisioterapeuta__nombre', 'fisioterapeuta__apellido', 'paciente__nombre1', 'paciente__apellido1']

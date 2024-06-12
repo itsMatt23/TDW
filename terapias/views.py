@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 import datetime
-from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones, Motivos
+from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones, Motivos, Rehabilitaciones
 from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.http import HttpResponse, JsonResponse
@@ -56,9 +56,68 @@ def pacientes(request):
     return render(request, 'pacientes.html')
 
 
+#####################
+def rehabilitacion_paciente(request):
+    paciente = None
+    rehabilitaciones = None
+    motivos = Motivos.objects.all()  # Obtener todos los motivos disponibles
 
+    cedula = request.POST.get('cedula', '') or request.GET.get('cedula', '')
 
+    if request.method == 'POST':
+        if 'buscar_paciente' in request.POST:
+            # Procesar búsqueda de paciente por cédula
+            cedula = request.POST.get('cedula', '')
+            if cedula:
+                paciente = get_object_or_404(Pacientes, cedula=cedula)
+                rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
 
+        elif 'crear_rehabilitacion' in request.POST:
+            # Procesar creación de rehabilitación para el paciente
+            paciente_id = request.POST.get('paciente_id', '')
+            motivo_id = request.POST.get('motivo_id', '')
+
+            if paciente_id and motivo_id:
+                fecha_inicio = datetime.date.today()
+                paciente = get_object_or_404(Pacientes, pk=paciente_id)
+                motivo = get_object_or_404(Motivos, pk=motivo_id)
+                fisioterapeuta = get_object_or_404(Fisioterapeutas, cedula="1850392620")  # Ejemplo de selección de fisioterapeuta
+
+                rehabilitacion = Rehabilitaciones(
+                    motivoID=motivo,
+                    fechaInicio=fecha_inicio,
+                    fisioterapeuta=fisioterapeuta,
+                    paciente=paciente
+                )
+                rehabilitacion.save()
+
+                # Recargar las rehabilitaciones actualizadas del paciente después de la creación
+                rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+
+        elif 'eliminar_rehabilitacion' in request.POST:
+            # Procesar eliminación de rehabilitación
+            rehabilitacion_id = request.POST.get('eliminar_rehabilitacion', '')
+            paciente_id = request.POST.get('paciente_id', '')
+            if rehabilitacion_id and paciente_id:
+                rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
+                rehabilitacion.delete()
+
+                # Recargar las rehabilitaciones actualizadas del paciente después de la eliminación
+                paciente = get_object_or_404(Pacientes, pk=paciente_id)
+                rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+
+        elif 'limpiar_pantalla' in request.POST:
+            # Restablecer la pantalla a su estado inicial
+            paciente = None
+            rehabilitaciones = None
+
+    return render(request, 'rehabilitacion.html', {
+        'paciente': paciente,
+        'rehabilitaciones': rehabilitaciones,
+        'motivos': motivos,  # Pasar los motivos al contexto del template
+    })
+
+#####################
 def terapia_paciente(request):
     paciente = None
     terapias = None
@@ -118,6 +177,7 @@ def terapia_paciente(request):
         'paciente': paciente,
         'terapias': terapias,
     })
+
 
 def gestion_paciente(request, cedula):
     try:
