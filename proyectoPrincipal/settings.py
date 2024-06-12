@@ -76,12 +76,9 @@ WSGI_APPLICATION = 'proyectoPrincipal.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'djongo',
         'NAME': 'terapias',
-        'USER': 'root',
-        'PASSWORD': 'mateo2324',
-        'HOST' : 'localhost',
-        'PORT': ''
+        # Otras configuraciones según sea necesario
     }
 }
 
@@ -121,7 +118,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "terapias/static",
 ]
 
 # Default primary key field type

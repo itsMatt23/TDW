@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pacientes, Fisioterapeutas, Terapias, Movimientos, Sesiones
+from .models import Pacientes, Fisioterapeutas, Terapias, Movimientos, Sesiones, Motivos
 
 # Registro de modelos en el admin
 @admin.register(Pacientes)
@@ -20,6 +20,10 @@ class TerapiasAdmin(admin.ModelAdmin):
 @admin.register(Movimientos)
 class MovimientosAdmin(admin.ModelAdmin):
     list_display = ['movimientoID', 'nombre', 'url']
+
+@admin.register(Motivos)
+class MovtivosAdmin(admin.ModelAdmin):
+    list_display = ['motivoID', 'nombre']
 
 @admin.register(Sesiones)
 class SesionesAdmin(admin.ModelAdmin):

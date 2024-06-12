@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 import datetime
-from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones
+from .models import Pacientes, Terapias, Fisioterapeutas, Movimientos, Sesiones, Motivos
 from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.http import HttpResponse, JsonResponse
@@ -78,7 +78,7 @@ def terapia_paciente(request):
             if paciente_id:
                 paciente = get_object_or_404(Pacientes, pk=paciente_id)
                 # Aquí deberías tener la lógica para seleccionar un terapeuta, por ejemplo:
-                terapeuta = get_object_or_404(Fisioterapeutas, cedula="1800000000")
+                terapeuta = get_object_or_404(Fisioterapeutas, cedula="1850392620")
                 # Para simplificar, supongamos que ya tienes el terapeuta seleccionado
 
                 fecha_actual = datetime.date.today()
@@ -211,19 +211,26 @@ def pacientes(request):
 # Actualizar movimientos
 def gestion_movimiento(request):
     movimientos = Movimientos.objects.all()
+    cantidad_movimientos = movimientos.count()
     movimiento_seleccionado = None
+    crear_movimiento = cantidad_movimientos < 5  # Verifica si se pueden crear más movimientos
 
     if request.method == 'POST':
-        movimiento_id = request.POST.get('movimiento')
-        movimiento_seleccionado = get_object_or_404(Movimientos, movimientoID=movimiento_id)
-        
-        movimiento_seleccionado.nombre = request.POST['nombre']
-        movimiento_seleccionado.url = request.POST['url']
-        movimiento_seleccionado.save()
+        if 'movimiento' in request.POST:  # Si se está actualizando un movimiento existente
+            movimiento_id = request.POST.get('movimiento')
+            movimiento_seleccionado = Movimientos.objects.get(movimientoID=movimiento_id)
+            movimiento_seleccionado.nombre = request.POST['nombre']
+            movimiento_seleccionado.url = request.POST['url']
+            movimiento_seleccionado.save()
+        else:  # Si se está creando un nuevo movimiento
+            if cantidad_movimientos < 5:  # Verifica nuevamente para evitar exceder los 5 movimientos
+                nuevo_movimiento = Movimientos(nombre=request.POST['nombre'], url=request.POST['url'])
+                nuevo_movimiento.save()
 
     return render(request, 'gestion_movimiento.html', {
         'movimientos': movimientos,
         'movimiento_seleccionado': movimiento_seleccionado,
+        'crear_movimiento': crear_movimiento,
     })
 
 
@@ -269,3 +276,30 @@ def fisioterapeutas_view(request):
     fisioterapeutas = Fisioterapeutas.objects.filter(nombre__icontains=query) | Fisioterapeutas.objects.filter(cedula__icontains=query)
     context = {'fisioterapeutas': fisioterapeutas}
     return render(request, 'fisioterapeutas.html', context)
+
+
+#####Motivos
+def gestion_motivo(request):
+    motivos = Motivos.objects.all()
+    crear_motivo = True  # Puedes ajustar la lógica para determinar cuándo mostrar el botón de crear
+
+    if request.method == 'POST':
+        if 'crear' in request.POST:  # Verificamos si se está creando un nuevo motivo
+            nombre = request.POST.get('nombre')
+            # Podrías validar los datos aquí antes de guardarlos
+            Motivos.objects.create(nombre=nombre)
+            return redirect('gestion_motivo')  # Redirige a la misma página después de crear un motivo
+        elif 'actualizar' in request.POST:  # Verificamos si se está actualizando un motivo existente
+            motivo_id = request.POST.get('motivo_id')
+            nombre = request.POST.get('nombre')
+            # Podrías validar los datos aquí antes de actualizarlos
+            motivo = Motivos.objects.get(id=motivo_id)
+            motivo.nombre = nombre
+            motivo.save()
+            return redirect('gestion_motivo')  # Redirige a la misma página después de actualizar el motivo
+
+    context = {
+        'motivos': motivos,
+        'crear_motivo': crear_motivo,
+    }
+    return render(request, 'gestion_motivos.html', context)

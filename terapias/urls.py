@@ -15,5 +15,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('logout/', views.logout_view, name='logout'),  # no cambiar
     path('fisioterapeutas/', views.fisioterapeutas_view, name='fisioterapeutas'),
+    path('gestion_motivo/', views.gestion_motivo, name='gestion_motivo'),
 ]
 

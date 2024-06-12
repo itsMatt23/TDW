@@ -26,13 +26,22 @@ class Fisioterapeutas(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
+
+#Motivos
+class Motivos(models.Model):
+    motivoID = models.AutoField(primary_key=True)  # Este campo es solo para Django
+    nombre = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.nombre
+
 # Modelo para Terapia
 class Terapias(models.Model):
     terapiaID = models.AutoField(primary_key=True)
     fecha = models.DateField(null=True)
+    motivoID = models.ForeignKey(Motivos, on_delete=models.CASCADE)
     fisioterapeuta = models.ForeignKey(Fisioterapeutas, on_delete=models.CASCADE)
     paciente = models.ForeignKey(Pacientes, on_delete=models.CASCADE)
-
 
 # Modelo para Movimiento
 class Movimientos(models.Model):
