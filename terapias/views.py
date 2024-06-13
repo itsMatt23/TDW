@@ -57,6 +57,7 @@ def pacientes(request):
 
 
 #####################
+#Rehabilitacion
 def rehabilitacion_paciente(request):
     paciente = None
     rehabilitaciones = None
@@ -118,6 +119,7 @@ def rehabilitacion_paciente(request):
     })
 
 #####################
+#Debes eliminar!!!!!
 def terapia_paciente(request):
     paciente = None
     terapias = None
@@ -178,6 +180,36 @@ def terapia_paciente(request):
         'terapias': terapias,
     })
 
+#Terapias
+def terapias(request, rehabilitacion_id):
+    rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
+    terapias = Terapias.objects.filter(rehabilitacionID=rehabilitacion)
+
+    if request.method == 'POST':
+        if 'crear_terapia' in request.POST:
+            fecha_actual = datetime.date.today()
+            terapia = Terapias(fecha=fecha_actual, rehabilitacionID=rehabilitacion)
+            terapia.save()
+
+            for i in range(1, 6):
+                movimiento = get_object_or_404(Movimientos, pk=i)
+                sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="15")
+                sesion.save()
+
+            return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
+        
+    elif 'eliminar_terapia' in request.POST:
+            terapia_id = request.POST.get('terapia_id')
+            if terapia_id:
+                terapia = get_object_or_404(Terapias, pk=terapia_id)
+                terapia.delete()
+                return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
+
+    return render(request, 'terapias.html', {
+        'rehabilitacion': rehabilitacion,
+        'terapias': terapias,
+    })
+
 
 def gestion_paciente(request, cedula):
     try:
@@ -191,6 +223,7 @@ def gestion_paciente(request, cedula):
             'paciente': paciente,
             'terapias': terapias,
         })
+
 
 
 #Movimientos
