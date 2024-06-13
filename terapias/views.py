@@ -6,9 +6,10 @@ from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from .models import Fisioterapeutas
-def home_view(request):
-    return render(request, 'index.html')  # Renderiza la plantilla index.html
 
+# Renderiza la plantilla index.html
+def home_view(request):
+    return render(request, 'index.html') 
 # Login
 def index_view(request):
     if request.method == "POST":
@@ -55,8 +56,25 @@ def pacientes(request):
     # Lógica de la vista de pacientes
     return render(request, 'pacientes.html')
 
+def gestion_paciente(request, cedula):
+    try:
+        paciente = Pacientes.objects.get(cedula=cedula)
+        rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+        motivos = Motivos.objects.all()  # Obtener todos los motivos disponibles
 
-#####################
+    except Pacientes.DoesNotExist:
+        paciente = None
+        rehabilitacion = None
+        motivos = None
+
+    return render(request, 'rehabilitacion.html', {
+            'paciente': paciente,
+            'rehabilitaciones': rehabilitaciones,
+            'motivos': motivos,  # Pasar los motivos al contexto del template
+        })
+
+##################################################
+#Gestion de Rehabilitaciones-Terapias-Movimientos#
 #Rehabilitacion
 def rehabilitacion_paciente(request):
     paciente = None
@@ -118,57 +136,40 @@ def rehabilitacion_paciente(request):
         'motivos': motivos,  # Pasar los motivos al contexto del template
     })
 
-#####################
-#Debes eliminar!!!!!
-#Terapia paciente
-
 #Terapias
 def terapias(request, rehabilitacion_id):
     rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
     terapias = Terapias.objects.filter(rehabilitacionID=rehabilitacion)
+    movimientos = Movimientos.objects.all()
 
     if request.method == 'POST':
         if 'crear_terapia' in request.POST:
-            fecha_actual = datetime.date.today()
-            terapia = Terapias(fecha=fecha_actual, rehabilitacionID=rehabilitacion)
-            terapia.save()
+            if movimientos.count() == 5:
 
-            for i in range(1, 6):
-                movimiento = get_object_or_404(Movimientos, pk=i)
-                sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="15")
-                sesion.save()
+                fecha_actual = datetime.date.today()
+                terapia = Terapias(fecha=fecha_actual, rehabilitacionID=rehabilitacion)
+                terapia.save()
 
-            return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
+                for i in range(1, 7):
+                    movimiento = get_object_or_404(Movimientos, pk=i)
+                    sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="15")
+                    sesion.save()
+                return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
         
-    elif 'eliminar_terapia' in request.POST:
+        elif 'eliminar_terapia' in request.POST:
             terapia_id = request.POST.get('terapia_id')
             
             if terapia_id:
                 terapia = get_object_or_404(Terapias, pk=terapia_id)
                 terapia.delete()
-
                 return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
 
     return render(request, 'terapias.html', {
         'rehabilitacion': rehabilitacion,
         'terapias': terapias,
+        'movimientos': movimientos,
+
     })
-
-
-def gestion_paciente(request, cedula):
-    try:
-        paciente = Pacientes.objects.get(cedula=cedula)
-        terapias = Terapias.objects.filter(paciente=paciente)
-    except Pacientes.DoesNotExist:
-        paciente = None
-        terapias = None
-
-    return render(request, 'terapias.html', {
-            'paciente': paciente,
-            'terapias': terapias,
-        })
-
-
 
 #Movimientos
 def movimientos(request, terapia_id):
@@ -180,6 +181,7 @@ def movimientos(request, terapia_id):
         'sesiones': sesiones,
     })
 
+#Metodo que permite actulizar las sesiones para que no vuelvan a hacer!!!
 def actualizar_sesiones(request):
     if request.method == 'POST':
 
@@ -196,7 +198,8 @@ def actualizar_sesiones(request):
         # Manejo si el método no es POST (opcional dependiendo de la lógica deseada)
         pass
 
-###########################################################################
+#################################
+#Gestion de Pacientes-Terapeutas#
 #Pacientes
 def pacientes(request):
     pacientes = Pacientes.objects.all()
@@ -243,35 +246,7 @@ def pacientes(request):
         return redirect('pacientes')
 
     return render(request, 'pacientes.html', {'pacientes': pacientes})
-
-
-# Actualizar movimientos
-def gestion_movimiento(request):
-    movimientos = Movimientos.objects.all()
-    cantidad_movimientos = movimientos.count()
-    movimiento_seleccionado = None
-    crear_movimiento = cantidad_movimientos < 5  # Verifica si se pueden crear más movimientos
-
-    if request.method == 'POST':
-        if 'movimiento' in request.POST:  # Si se está actualizando un movimiento existente
-            movimiento_id = request.POST.get('movimiento')
-            movimiento_seleccionado = Movimientos.objects.get(movimientoID=movimiento_id)
-            movimiento_seleccionado.nombre = request.POST['nombre']
-            movimiento_seleccionado.url = request.POST['url']
-            movimiento_seleccionado.save()
-        else:  # Si se está creando un nuevo movimiento
-            if cantidad_movimientos < 5:  # Verifica nuevamente para evitar exceder los 5 movimientos
-                nuevo_movimiento = Movimientos(nombre=request.POST['nombre'], url=request.POST['url'])
-                nuevo_movimiento.save()
-
-    return render(request, 'gestion_movimiento.html', {
-        'movimientos': movimientos,
-        'movimiento_seleccionado': movimiento_seleccionado,
-        'crear_movimiento': crear_movimiento,
-    })
-
-
-#################
+#Fisioterapeutas
 def fisioterapeutas_view(request):
     if request.method == 'POST':
         if 'create' in request.POST:
@@ -314,8 +289,34 @@ def fisioterapeutas_view(request):
     context = {'fisioterapeutas': fisioterapeutas}
     return render(request, 'fisioterapeutas.html', context)
 
+################################
+#Gestion de Movimientos-Motivos#
+#Actualizar movimientos
+def gestion_movimiento(request):
+    movimientos = Movimientos.objects.all()
+    cantidad_movimientos = movimientos.count()
+    movimiento_seleccionado = None
+    crear_movimiento = cantidad_movimientos < 5  # Verifica si se pueden crear más movimientos
 
-#####Motivos
+    if request.method == 'POST':
+        if 'movimiento' in request.POST:  # Si se está actualizando un movimiento existente
+            movimiento_id = request.POST.get('movimiento')
+            movimiento_seleccionado = Movimientos.objects.get(movimientoID=movimiento_id)
+            movimiento_seleccionado.nombre = request.POST['nombre']
+            movimiento_seleccionado.url = request.POST['url']
+            movimiento_seleccionado.save()
+        else:  # Si se está creando un nuevo movimiento
+            if cantidad_movimientos < 5:  # Verifica nuevamente para evitar exceder los 5 movimientos
+                nuevo_movimiento = Movimientos(nombre=request.POST['nombre'], url=request.POST['url'])
+                nuevo_movimiento.save()
+
+    return render(request, 'gestion_movimiento.html', {
+        'movimientos': movimientos,
+        'movimiento_seleccionado': movimiento_seleccionado,
+        'crear_movimiento': crear_movimiento,
+    })
+
+#Actualizar Motivos
 def gestion_motivo(request):
     motivos = Motivos.objects.all()
     crear_motivo = True  # Puedes ajustar la lógica para determinar cuándo mostrar el botón de crear

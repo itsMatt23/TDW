@@ -29,11 +29,16 @@
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-celeste">Terapias</a>
+                        <a class="nav-link text-celeste" href="{% url 'rehabilitacion_paciente' %}">Rehabilitaciones</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'gestion_movimiento' %}">Movimientos</a>
+                    </li>
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
+                    -->
                     <li class="nav-item">
                         <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar
                             Sesión</a>
@@ -64,14 +69,15 @@
                     </ul>
 
                     <div class="text-center mb-4" style="padding-top: 10px;">
-                        <form method="post"  action="{% url 'terapias' rehabilitacion.rehabilitacionID %}" class="mr-2">
+                        <form method="post"  action="{% url 'terapias' rehabilitacion.rehabilitacionID %}" class="d-inline-block">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-primary" name="crear_terapia">
+                            <button type="submit" class="btn btn-primary" name="crear_terapia" {% if movimientos|length != 5 %}disabled{% endif %}>
                                 <i class="fas fa-plus"></i> Añadir Terapia
                             </button>
                         </form>
+
                         <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
-                    </div>
+                    </div>                  
                 </div>
             </div>
 

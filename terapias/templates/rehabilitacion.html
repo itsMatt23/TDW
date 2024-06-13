@@ -28,8 +28,13 @@
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                    </li>
+                    -->
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'gestion_motivo' %}">Motivos</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'pacientes' %}">Pacientes</a>
@@ -72,21 +77,25 @@
                         <p class="card-text">Apellido: {{ paciente.apellido1 }}</p>
                         <p class="card-text">Celular: {{ paciente.celular }}</p>
                         <p class="card-text">Dirección: {{ paciente.direccion }}</p>
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-end align-items-center">
 
-                            <form method="post" action="{% url 'rehabilitacion_paciente' %}" class="mr-2">
+                            <form method="post" action="{% url 'rehabilitacion_paciente' %}" class="mr-3 d-flex align-items-center">
                                 {% csrf_token %}
                                 <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
-                                    <label for="motivo_id">Motivo</label>
-                                    <select class="form-control" id="motivo_id" name="motivo_id" required>
-                                        {% for motivo in motivos %}
-                                            <option value="{{ motivo.motivoID }}">{{ motivo.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                <button type="submit" class="btn btn-primary" name="crear_rehabilitacion">
-                                    <i class="fas fa-plus"></i> Añadir Rehabilitacion
+                                <label for="motivo_id" class="mr-2 mb-0"><strong>Motivo: </strong> </label>
+                                <select class="form-control mr-2" id="motivo_id" name="motivo_id" required>
+                                    <!--En caso de que no hayan motivos no se puede crear las rehabilitaciones-->
+                                    {% for motivo in motivos %}
+                                        <option value="{{ motivo.motivoID }}">{{ motivo.nombre }}</option>
+                                        {% empty %}
+                                        <option value="">No hay motivos disponibles</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary w-100" name="crear_rehabilitacion" {% if not motivos %}disabled{% endif %}>
+                                    <i class="fas fa-plus"></i> Añadir Rehabilitación
                                 </button>
                             </form>
+                        
                             <form method="post" action="{% url 'rehabilitacion_paciente' %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-secondary" name="limpiar_pantalla">
@@ -94,6 +103,7 @@
                                 </button>
                             </form>
                         </div>
+                        
                     </div>
                 </div>
 

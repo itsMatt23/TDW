@@ -27,7 +27,7 @@
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                        <a class="nav-link text-celeste" href="{% url 'rehabilitacion_paciente' %}">Rehabilitaciones</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
@@ -62,7 +62,7 @@
                     <tbody>
                         {% for motivo in motivos %}
                         <tr>
-                            <td>{{ motivo.id }}</td>
+                            <td>{{ motivo.motivoID }}</td>
                             <td>{{ motivo.nombre }}</td>
                             <td>
                                 <!-- Botón para Actualizar -->
@@ -101,6 +101,11 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="text-center mb-4" style="padding-top: 10px;">
+                    <a href="{% url 'rehabilitacion_paciente' %}" class="btn btn-secondary">
+                        Volver a atrás
+                    </a>
+                </div>
             </div>
         </div>
 
