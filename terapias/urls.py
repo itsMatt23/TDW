@@ -4,16 +4,28 @@ from . import views
 urlpatterns = [
     path('', views.home_view, name='home'),
     path('/menu/', views.terapia_paciente, name='terapia_paciente'),
+
     path('/<str:cedula>/', views.gestion_paciente, name='gestion_paciente'),
-    path('movimientos/<int:terapia_id>/', views.movimientos, name='movimientos'),
-    path('actualizar_sesiones/', views.actualizar_sesiones, name='actualizar_sesiones'),
-    path('pacientes/', views.pacientes, name='pacientes'),
-    path('/movimientos/editar/', views.gestion_movimiento, name='gestion_movimiento'),
+
+    path('rehabilitacion_paciente/', views.rehabilitacion_paciente, name='rehabilitacion_paciente'), ##Esta es la nueva vista de rehabilitaciones
+    path('terapias/<int:rehabilitacion_id>/', views.terapias, name='terapias'), ##Esta es la nueva vista de terapias
+    path('movimientos/<int:terapia_id>/', views.movimientos, name='movimientos'), #Movimientos
+    path('actualizar_sesiones/', views.actualizar_sesiones, name='actualizar_sesiones'), #
+
+    path('/movimientos/editar/', views.gestion_movimiento, name='gestion_movimiento'), #Agregar y editar Movimientos
+    path('gestion_motivo/', views.gestion_motivo, name='gestion_motivo'), #Agregar y editar Motivos
+
     path('index/', views.index_view, name='index'),  # no cambiar
+
     path('TerapeutaOpciones/', views.TerapeutaOpciones_view, name='TerapeutaOpciones'),
-    path('terapia_paciente/', views.terapia_paciente, name='terapia_paciente'),
+    path('pacientes/', views.pacientes, name='pacientes'),
+    path('fisioterapeutas/', views.fisioterapeutas_view, name='fisioterapeutas'),
+
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('logout/', views.logout_view, name='logout'),  # no cambiar
-    path('fisioterapeutas/', views.fisioterapeutas_view, name='fisioterapeutas'),
+
+
+
+
 ]
 

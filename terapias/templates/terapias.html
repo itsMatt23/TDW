@@ -5,14 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración de Pacientes</title>
+    <title>Terapias de Rehabilitacion</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
-    <!-- Pagina -->
     <div class="d-flex flex-column min-vh-100">
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
@@ -20,7 +19,8 @@
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -29,74 +29,65 @@
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                        <a class="nav-link text-celeste" href="{% url 'rehabilitacion_paciente' %}">Rehabilitaciones</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'pacientes' %}">Pacientes</a>
+                        <a class="nav-link text-celeste" href="{% url 'gestion_movimiento' %}">Movimientos</a>
                     </li>
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
+                    -->
                     <li class="nav-item">
-                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar Sesión</a>
+                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar
+                            Sesión</a>
                     </li>
                 </ul>
             </div>
         </nav>
         <br><br>
-        <!-- Contenido -->
         <div class="container flex-grow-1 mt-5">
-            <h1 class="display-4 text-center">Bienvenido</h1>
-            <div class="row justify-content-center my-4">
-                <div class="col-md-8">
-                    <form method="post" action="{% url 'terapia_paciente' %}">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Buscar paciente por cédula" maxlength="10" id="cedula" name="cedula" oninput="limitarLongitud(this, 10)" required>
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="submit" name="buscar_paciente">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+            <!-- Detalles de la terapia -->
+            <div class="card mb-4">
+                <div class="card-header text-Dark">Detalle de Rehabilitacion</div>
+                <div class="card-body">
+                    <h5 class="card-title">Rehabilitacion {{ rehabilitacion.rehabilitacionID }}</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Motivo:</strong> {{ rehabilitacion.motivoID.nombre }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Paciente:</strong> {{ rehabilitacion.paciente.nombre1 }} {{ rehabilitacion.paciente.apellido1 }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Terapeuta:</strong> Dr. {{ rehabilitacion.fisioterapeuta.apellido }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Fecha:</strong> {{ rehabilitacion.fechaInicio }}
+                        </li>
+                    </ul>
+
+                    <div class="text-center mb-4" style="padding-top: 10px;">
+                        <form method="post"  action="{% url 'terapias' rehabilitacion.rehabilitacionID %}" class="d-inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary" name="crear_terapia" {% if movimientos|length != 5 %}disabled{% endif %}>
+                                <i class="fas fa-plus"></i> Añadir Terapia
+                            </button>
+                        </form>
+
+                        <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
+                    </div>                  
                 </div>
             </div>
 
-            {% if paciente %}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Detalles del Paciente</h5>
-                        <p class="card-text">Cédula: {{ paciente.cedula }}</p>
-                        <p class="card-text">Nombre: {{ paciente.nombre1 }}</p>
-                        <p class="card-text">Apellido: {{ paciente.apellido1 }}</p>
-                        <p class="card-text">Celular: {{ paciente.celular }}</p>
-                        <p class="card-text">Dirección: {{ paciente.direccion }}</p>
-                        <div class="d-flex justify-content-end">
-                            <form method="post" action="{% url 'terapia_paciente' %}" class="mr-2">
-                                {% csrf_token %}
-                                <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
-                                <button type="submit" class="btn btn-primary" name="crear_terapia">
-                                    <i class="fas fa-plus"></i> Añadir Terapia
-                                </button>
-                            </form>
-                            <form method="post" action="{% url 'terapia_paciente' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary" name="limpiar_pantalla">
-                                    <i class="fas fa-eraser"></i> Limpiar
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <h3 class="text-left">Lista de Terapias</h3>
+            <!-- Lista de Movimientos -->
+            <h3 class="text-left">Lista de Terapias</h3>
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Terapia</th>
                             <th>Fecha</th>
-                            <th>Fisioterapeuta</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -106,13 +97,12 @@
                                 <tr>
                                     <td>Terapia {{ forloop.counter }}</td>
                                     <td>{{ terapia.fecha }}</td>
-                                    <td>Dr. {{ terapia.fisioterapeuta.apellido }}</td>
                                     <td>
                                         <a href="{% url 'movimientos' terapia.terapiaID %}" class="btn btn-info btn-sm">
                                             <i class="fas fa-dumbbell"></i> Movimientos
                                         </a>
                                         <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTherapyModal{{ terapia.terapiaID }}">
-                                            <i class="fas fa-trash-alt"></i>
+                                            <i class="fas fa-trash-alt"></i> Eliminar
                                         </button>
                                     </td>
                                 </tr>
@@ -129,12 +119,11 @@
                                             </div>
                                             <div class="modal-body">¿Estás seguro que quieres eliminar esta terapia?</div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                                                <form method="post" action="{% url 'terapia_paciente' %}">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                                                <form method="post" action="{% url 'terapias' rehabilitacion.rehabilitacionID %}">
                                                     {% csrf_token %}
-                                                    <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
-                                                    <input type="hidden" name="eliminar_terapia" value="{{ terapia.terapiaID }}">
-                                                    <button type="submit" class="btn btn-success">Sí</button>
+                                                    <input type="hidden" name="terapia_id" value="{{ terapia.terapiaID }}">
+                                                    <button type="submit" class="btn btn-danger" name="eliminar_terapia">Sí</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -148,8 +137,8 @@
                         {% endif %}
                     </tbody>
                 </table>
-            {% endif %}
         </div>
+
 
         <!-- Footer -->
         <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
@@ -167,39 +156,32 @@
                 </div>
             </div>
         </footer>
-    </div>
 
-    <!-- cerrar sesion Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="logoutModalLabel">¿Listo para salir?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">Selecciona "Cerrar Sesión" a continuación si estás listo para finalizar tu sesión actual.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
-                    <a class="btn btn-primary" href="{% url 'logout' %}">Cerrar Sesión</a>
+
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">¿Listo para salir?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecciona "Cerrar Sesión" a continuación si estás listo para finalizar tu sesión actual.</div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                        <a class="btn btn-primary" href="{% url 'logout' %}">Cerrar Sesión</a>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
-    <script src="{% static 'js/script.js' %}"></script>
-    <script>
-        function limitarLongitud(input, maxLength) {
-            if (input.value.length > maxLength) {
-                input.value = input.value.slice(0, maxLength);
-            }
-        }
-    </script>
 </body>
 
 </html>

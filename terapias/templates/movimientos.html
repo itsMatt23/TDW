@@ -15,7 +15,7 @@
     <div class="d-flex flex-column min-vh-100">
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
-            <a class="navbar-brand text-celeste" href="href="{% url 'TerapeutaOpciones' %}"">
+            <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
@@ -29,11 +29,13 @@
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                        <a class="nav-link text-celeste" href="{% url 'rehabilitacion_paciente' %}">Rehabilitaciones</a>
                     </li>
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
+                -->
                     <li class="nav-item">
                         <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar
                             Sesión</a>
@@ -49,12 +51,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Terapia {{ terapia.terapiaID }}</h5>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <strong>Paciente:</strong> {{ terapia.paciente.nombre1 }} {{ terapia.paciente.apellido1 }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Terapeuta:</strong> Dr. {{ terapia.fisioterapeuta.apellido }}
-                        </li>
+                        
                         <li class="list-group-item">
                             <strong>Fecha:</strong> {{ terapia.fecha }}
                         </li>
@@ -71,47 +68,37 @@
 
             <!-- Lista de Movimientos -->
             <h3 class="text-left mb-4">Lista de Movimientos</h3>
-            <form method="post" action="{% url 'actualizar_sesiones' %}">
+            <form method="post" action="{% url 'actualizar_sesiones' %}" id="sesionesForm">
                 {% csrf_token %}
                 <div class="accordion" id="movementsAccordion">
-                    {% with count_true=0 %}
-                        {% for sesion in sesiones %}
-                            <div class="card">
-                                <div class="card-header text-Dark d-flex justify-content-between align-items-center">
-                                    <div class="form-inline">
-                                        <div class="form-check mr-3">
-                                            <input class="form-check-input form-check-input-lg" type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}" {% if sesion.estado %}checked disabled{% endif %} style="cursor: pointer;">
-                                        </div>
-                                        {{ sesion.movimientoID.nombre }}
+                    {% for sesion in sesiones %}
+                        <div class="card">
+                            <div class="card-header text-Dark d-flex justify-content-between align-items-center">
+                                <div class="form-inline">
+                                    <div class="form-check mr-3">
+                                        <input class="form-check-input form-check-input-lg sesion-checkbox" type="checkbox" name="sesiones_seleccionadas" value="{{ sesion.sesionID }}" {% if sesion.estado %}checked disabled{% endif %} style="cursor: pointer;">
                                     </div>
-
-                                    <!-- Acciones -->
-                                    <div class="d-flex align-items-center">
-                                        Repeticiones:
-                                        <div class="form-group mb-0 mr-3" style="padding-left: 10px;">
-                                            <input type="number" class="form-control" id="repeticiones_{{ sesion.sesionID }}" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20" {% if sesion.estado %}disabled{% endif %}>
-                                        </div>
+                                    {{ sesion.movimientoID.nombre }}
+                                </div>
+                                <!-- Acciones -->
+                                <div class="d-flex align-items-center">
+                                    Repeticiones:
+                                    <div class="form-group mb-0 mr-3" style="padding-left: 10px;">
+                                        <input type="number" class="form-control" id="repeticiones_{{ sesion.sesionID }}" name="repeticiones_{{ sesion.sesionID }}" value="{{ sesion.repeticiones }}" min="10" max="20" {% if sesion.estado %}disabled{% endif %}>
                                     </div>
                                 </div>
                             </div>
-                            {% if sesion.estado %}
-                                {% with count_true=count_true|add:1 %}
-                                {% endwith %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endwith %}
+                        </div>
+                    {% endfor %}
                 </div>
-
+            
                 <div class="text-center mb-4" style="padding-top: 10px;">
-                    {% if count_true >= 5 %}
-                        <p>Ya has marcado el máximo de sesiones.</p>
-                        <button type="submit" class="btn btn-primary" disabled>Actualizar Estados</button>
-                    {% else %}
-                        <button type="submit" class="btn btn-primary">Actualizar Estados</button>
-                    {% endif %}
+                    <button type="submit" class="btn btn-primary" id="iniciarButton" disabled>Iniciar</button>
                 </div>
             </form>
+
         </div>
+
 
         <!-- Footer -->
         <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
@@ -157,3 +144,25 @@
 </body>
 
 </html>
+
+
+<script>
+    // Script para validar checkbox antes de enviar el formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.sesion-checkbox');
+        const iniciarButton = document.getElementById('iniciarButton');
+
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                let checked = false;
+                checkboxes.forEach(function(cb) {
+                    if (cb.checked) {
+                        checked = true;
+                    }
+                });
+
+                iniciarButton.disabled = !checked;
+            });
+        });
+    });
+</script>
