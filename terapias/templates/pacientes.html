@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,33 +8,126 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
+    <style>
+        .card {
+            transition: transform 0.3s, background-color 0.3s, color 0.3s;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+        }
 
+        .card:hover {
+            transform: scale(1.05);
+            background-color: #02B1F4;
+            color: #fff;
+        }
+
+        .card:hover .card-icon {
+            color: #fff;
+        }
+
+        .card-icon {
+            color: #02B1F4;
+            font-size: 4rem;
+            transition: color 0.3s;
+        }
+
+        .btn-scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #02B1F4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50%;
+            display: none;
+            cursor: pointer;
+        }
+
+        .btn-scroll-top:hover {
+            background-color: #0197D4;
+        }
+
+        .bg-celeste {
+            background-color: #02B1F4;
+        }
+
+        .text-celeste {
+            color: #02B1F4;
+        }
+
+        .navbar .dropdown-menu {
+            background-color: rgba(2, 177, 244, 0.9);
+        }
+
+        .navbar .dropdown-menu .dropdown-item {
+            color: white;
+        }
+
+        .navbar .dropdown-menu .dropdown-item:hover {
+            background-color: #0197D4;
+        }
+
+        @media (max-width: 991.98px) {
+            .custom-navbar-collapse {
+                background-color: rgba(2, 177, 244, 0.9);
+            }
+            .custom-navbar-collapse .nav-link,
+            .custom-navbar-collapse .navbar-brand,
+            .custom-navbar-collapse .dropdown-item {
+                color: white !important;
+            }
+        }
+    </style>
+</head>
 <body>
     <div class="d-flex flex-column min-vh-100">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+          <!-- Navbar -->
+          <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
             <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse custom-navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'rehabilitacion_paciente' %}">Rehabilitaciones</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownUsuarios" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Usuarios
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
+                            <a class="dropdown-item" href="{% url 'pacientes' %}">Pacientes</a>
+                            {% if is_superuser %}
+                            <a class="dropdown-item" href="{% url 'fisioterapeutas' %}">Terapeutas</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                 
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Gestión
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                            <a class="dropdown-item" href="{% url 'rehabilitacion_paciente' %}">Rehabilitación</a>
+                            <a class="dropdown-item" href="{% url 'gestion_motivo' %}">Motivos</a>
+                            <a class="dropdown-item" href="{% url 'gestion_movimiento' %}">Movimientos</a>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar
-                            Sesión</a>
+                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar Sesión</a>
                     </li>
                 </ul>
             </div>
@@ -46,7 +138,7 @@
             <!-- Formulario de Búsqueda -->
             <form method="get" action="{% url 'pacientes' %}" class="mb-4">
                 <div class="input-group">
-                    <input type="number" maxlength="10" class="form-control" placeholder="Buscar por cédula..." name="cedula" value="{{ request.GET.cedula }}">
+                    <input type="text" class="form-control" placeholder="Buscar por cédula o nombre..." name="query" value="{{ request.GET.query }}">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="fas fa-search"></i>
@@ -65,7 +157,7 @@
             </button>
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-{{ message.tags }}" role="alert">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -77,8 +169,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Cédula</th>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
+                            <th>Nombre Completo</th>
                             <th>Celular</th>
                             <th>Dirección</th>
                             <th>Acciones</th>
@@ -90,8 +181,7 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ paciente.cedula }}</td>
-                                    <td>{{ paciente.nombre1 }}</td>
-                                    <td>{{ paciente.apellido1 }}</td>
+                                    <td>{{ paciente.nombre1 }} {{ paciente.nombre2 }} {{ paciente.apellido1 }} {{ paciente.apellido2 }}</td>
                                     <td>{{ paciente.celular }}</td>
                                     <td>{{ paciente.direccion }}</td>
                                     <td>
@@ -99,9 +189,8 @@
                                             <i class="fas fa-edit"></i> Actualizar
                                         </button>
                                         <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal-{{ paciente.cedula }}">
-                                            <i class="fas fa-trash-alt"></i>
+                                            <i class="fas fa-trash-alt"></i> Eliminar
                                         </button>
-                                        
                                         <a href="{% url 'gestion_paciente' paciente.cedula %}" class="btn btn-primary">
                                             <i class="fas fa-procedures"></i> Rehabilitaciones
                                         </a>
@@ -192,7 +281,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7">No se encontraron pacientes con la cédula ingresada.</td>
+                                <td colspan="7">No se encontraron pacientes con los criterios ingresados.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -303,5 +392,4 @@
         }
     </script>
 </body>
-
 </html>

@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from .models import Fisioterapeutas
+from django.db.models import Q  # Importar Q para las consultas OR
 
 # Renderiza la plantilla index.html
 def home_view(request):
@@ -88,8 +89,12 @@ def rehabilitacion_paciente(request):
             # Procesar búsqueda de paciente por cédula
             cedula = request.POST.get('cedula', '')
             if cedula:
-                paciente = get_object_or_404(Pacientes, cedula=cedula)
-                rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+                try:
+                    paciente = Pacientes.objects.get(cedula=cedula)
+                    rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+                except Pacientes.DoesNotExist:
+                    paciente = None
+                    messages.error(request, 'Paciente no encontrado. Intenta buscarlo en la lista de pacientes.')
 
         elif 'crear_rehabilitacion' in request.POST:
             # Procesar creación de rehabilitación para el paciente
@@ -145,20 +150,18 @@ def terapias(request, rehabilitacion_id):
     if request.method == 'POST':
         if 'crear_terapia' in request.POST:
             if movimientos.count() == 5:
-
                 fecha_actual = datetime.date.today()
                 terapia = Terapias(fecha=fecha_actual, rehabilitacionID=rehabilitacion)
                 terapia.save()
 
-                for i in range(1, 7):
+                for i in range(1, 6):  # Movimientos del 1 al 5
                     movimiento = get_object_or_404(Movimientos, pk=i)
-                    sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="15")
+                    sesion = Sesiones(movimientoID=movimiento, terapiaID=terapia, estado=False, porcentaje=0, repeticiones="10")
                     sesion.save()
                 return redirect('terapias', rehabilitacion_id=rehabilitacion_id)
-        
+
         elif 'eliminar_terapia' in request.POST:
             terapia_id = request.POST.get('terapia_id')
-            
             if terapia_id:
                 terapia = get_object_or_404(Terapias, pk=terapia_id)
                 terapia.delete()
@@ -168,7 +171,6 @@ def terapias(request, rehabilitacion_id):
         'rehabilitacion': rehabilitacion,
         'terapias': terapias,
         'movimientos': movimientos,
-
     })
 
 #Movimientos
@@ -203,9 +205,16 @@ def actualizar_sesiones(request):
 #Pacientes
 def pacientes(request):
     pacientes = Pacientes.objects.all()
-    if 'cedula' in request.GET:
-        cedula = request.GET['cedula']
-        pacientes = pacientes.filter(cedula__icontains=cedula)
+    query = request.GET.get('query', '')
+
+    if query:
+        pacientes = pacientes.filter(
+            Q(cedula__icontains=query) | 
+            Q(nombre1__icontains=query) | 
+            Q(nombre2__icontains=query) | 
+            Q(apellido1__icontains=query) | 
+            Q(apellido2__icontains=query)
+        )
 
     if request.method == 'POST':
         if 'create' in request.POST:
@@ -213,7 +222,6 @@ def pacientes(request):
             cedula = request.POST['cedula']
             if Pacientes.objects.filter(cedula=cedula).exists():
                 messages.error(request, f'La cédula {cedula} ya está en uso.')
-
             else:
                 Pacientes.objects.create(
                     cedula=request.POST['cedula'],
@@ -226,22 +234,25 @@ def pacientes(request):
                     email=request.POST['email']
                     #contrasena=request.POST['contrasena']
                 )
-            
+                messages.success(request, 'Paciente creado exitosamente')
 
         elif 'update' in request.POST:
-            patiente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
-            patiente.nombre1 = request.POST['nombre1']
-            patiente.nombre2 = request.POST.get('nombre2', '')
-            patiente.apellido1 = request.POST['apellido1']
-            patiente.apellido2 = request.POST.get('apellido2', '')
-            patiente.celular = request.POST.get('celular', '')
-            patiente.direccion = request.POST.get('direccion', '')
-            patiente.email = request.POST['email']
-            #patiente.contrasena = request.POST['contrasena']
-            patiente.save()
+            paciente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            paciente.nombre1 = request.POST['nombre1']
+            paciente.nombre2 = request.POST.get('nombre2', '')
+            paciente.apellido1 = request.POST['apellido1']
+            paciente.apellido2 = request.POST.get('apellido2', '')
+            paciente.celular = request.POST.get('celular', '')
+            paciente.direccion = request.POST.get('direccion', '')
+            paciente.email = request.POST['email']
+            #paciente.contrasena = request.POST['contrasena']
+            paciente.save()
+            messages.success(request, 'Paciente actualizado exitosamente')
+
         elif 'delete' in request.POST:
-            patiente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
-            patiente.delete()
+            paciente = get_object_or_404(Pacientes, cedula=request.POST['cedula'])
+            paciente.delete()
+            messages.success(request, 'Paciente eliminado exitosamente')
 
         return redirect('pacientes')
 
