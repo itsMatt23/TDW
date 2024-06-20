@@ -6,7 +6,6 @@ body {
     flex-direction: column;
     min-height: 100vh;
     font-family: 'Poppins', sans-serif;
-  
 }
 
 .d-flex.flex-column.min-vh-100 {
@@ -111,6 +110,60 @@ body {
     color: #02B1F4;
     transform: scale(1.1);
 }
+.custom-navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-nav .nav-link {
+    color: #02B1F4;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #0197D4;
+}
+
+.navbar-nav .dropdown-menu {
+    background-color: rgba(2, 177, 244, 0.9); /* Fondo azul claro */
+    color: white; /* Color del texto */
+}
+
+.navbar-nav .dropdown-menu .dropdown-item {
+    color: white; /* Color del texto de los elementos */
+}
+
+.navbar-nav .dropdown-menu .dropdown-item:hover {
+    color: #0197D4;
+    background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco con transparencia */
+}
+
+.custom-navbar-collapse {
+    background-color: rgba(2, 177, 244, 0.9); /* Fondo azul claro */
+    backdrop-filter: blur(10px); /* Desenfoque de fondo */
+    padding: 10px; /* Añadir un poco de padding */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+/* Hacer que las letras sean blancas en el menú colapsado */
+.custom-navbar-collapse .nav-link {
+    color: white !important;
+}
+
+/* Hacer que el botón de cerrar sesión también tenga letras blancas */
+.custom-navbar-collapse .btn-celeste {
+    color: white !important;
+}
+
+@media (max-width: 991.98px) {
+    .custom-navbar-collapse {
+        background-color: rgba(2, 177, 244, 0.9);
+    }
+    .custom-navbar-collapse .nav-link,
+    .custom-navbar-collapse .navbar-brand,
+    .custom-navbar-collapse .dropdown-item {
+        color: white !important;
+    }
+}
+
 
 footer {
     animation: 0.5s ease-out 0s 1 slideInUp;
@@ -161,24 +214,6 @@ footer p {
     color: white;
 }
 
-.bg-celeste {
-    background-color: #00A6FF;
-}
-
-.text-celeste {
-    color: #00A6FF;
-}
-
-.btn-celeste {
-    background-color: #00A6FF;
-    border-color: #00A6FF;
-}
-
-.btn-celeste:hover {
-    background-color: #007ACC;
-    border-color: #007ACC;
-}
-
 .mt-5 {
     margin-top: 3rem !important;
 }
@@ -193,6 +228,7 @@ footer p {
     height: 400px; /* Establece una altura fija */
     object-fit: cover; /* Ajusta la imagen manteniendo la relación de aspecto y recortándola para que se ajuste */
 }
+
 /* Modales estilos */
 .modal-content {
     border-radius: 10px;
@@ -223,7 +259,6 @@ footer p {
 .modal-body {
     padding: 2rem;
 }
-
 
 .input-group .form-control {
     border-right: 0;
@@ -262,3 +297,14 @@ footer p {
     margin-left: 20px; /* Espacio entre el nombre del ejercicio y el resultado */
 }
 
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}

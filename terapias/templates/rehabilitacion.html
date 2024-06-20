@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,46 +9,79 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
+<style>
+            .navbar .dropdown-menu {
+            background-color: rgba(2, 177, 244, 0.9);
+        }
 
+        .navbar .dropdown-menu .dropdown-item {
+            color: white;
+        }
+
+        .navbar .dropdown-menu .dropdown-item:hover {
+            background-color: #0197D4;
+        }
+
+        @media (max-width: 991.98px) {
+            .custom-navbar-collapse {
+                background-color: rgba(2, 177, 244, 0.9);
+            }
+            .custom-navbar-collapse .nav-link,
+            .custom-navbar-collapse .navbar-brand,
+            .custom-navbar-collapse .dropdown-item {
+                color: white !important;
+            }
+        }
+</style>
 <body>
-    <!-- Pagina -->
     <div class="d-flex flex-column min-vh-100">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
-            <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
-                <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
-                Terapias
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
-                    </li>
-                    <!--
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
-                    </li>
-                    -->
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'gestion_motivo' %}">Motivos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'pacientes' %}">Pacientes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar Sesión</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-        <br><br>
-        <!-- Contenido -->
+       <!-- Navbar -->
+       <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+        <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
+            <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+            Terapias
+        </a>
+        <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse custom-navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownUsuarios" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Usuarios
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
+                        <a class="dropdown-item" href="{% url 'pacientes' %}">Pacientes</a>
+                        {% if is_superuser %}
+                        <a class="dropdown-item" href="{% url 'fisioterapeutas' %}">Terapeutas</a>
+                        {% endif %}
+                    </div>
+                </li>
+             
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Gestión
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                        <a class="dropdown-item" href="{% url 'rehabilitacion_paciente' %}">Rehabilitación</a>
+                        <a class="dropdown-item" href="{% url 'gestion_motivo' %}">Motivos</a>
+                        <a class="dropdown-item" href="{% url 'gestion_movimiento' %}">Movimientos</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <br><br>
         <div class="container flex-grow-1 mt-5">
             <h1 class="display-4 text-center">Bienvenido</h1>
             <div class="row justify-content-center my-4">
@@ -68,6 +100,14 @@
                 </div>
             </div>
 
+            {% if messages %}
+                <div class="alert alert-danger text-center">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             {% if paciente %}
                 <div class="card mb-4">
                     <div class="card-body">
@@ -84,7 +124,6 @@
                                 <input type="hidden" name="paciente_id" value="{{ paciente.cedula }}">
                                 <label for="motivo_id" class="mr-2 mb-0"><strong>Motivo: </strong> </label>
                                 <select class="form-control mr-2" id="motivo_id" name="motivo_id" required>
-                                    <!--En caso de que no hayan motivos no se puede crear las rehabilitaciones-->
                                     {% for motivo in motivos %}
                                         <option value="{{ motivo.motivoID }}">{{ motivo.nombre }}</option>
                                         {% empty %}
@@ -103,7 +142,6 @@
                                 </button>
                             </form>
                         </div>
-                        
                     </div>
                 </div>
 
@@ -119,8 +157,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if rehabilitaciones  %}
-                            {% for rehabilitacion in rehabilitaciones  %}
+                        {% if rehabilitaciones %}
+                            {% for rehabilitacion in rehabilitaciones %}
                                 <tr>
                                     <td>Rehabilitacion {{ forloop.counter }}</td>
                                     <td>{{ rehabilitacion.motivoID.nombre }}</td>
@@ -133,7 +171,6 @@
                                         <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRehabModal{{ rehabilitacion.rehabilitacionID }}">
                                             <i class="fas fa-trash-alt"></i> Eliminar
                                         </button>
-                                        
                                     </td>
                                 </tr>
 
@@ -163,7 +200,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="4">No se encontraron terapias para este paciente.</td>
+                                <td colspan="5">No se encontraron terapias para este paciente.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -171,7 +208,6 @@
             {% endif %}
         </div>
 
-        <!-- Footer -->
         <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
             <div class="container p-4">
                 <div class="row">
@@ -189,7 +225,6 @@
         </footer>
     </div>
 
-    <!-- cerrar sesion Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -221,5 +256,4 @@
         }
     </script>
 </body>
-
 </html>

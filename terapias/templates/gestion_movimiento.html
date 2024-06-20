@@ -10,25 +10,68 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
+<style>
+            .navbar .dropdown-menu {
+            background-color: rgba(2, 177, 244, 0.9);
+        }
 
+        .navbar .dropdown-menu .dropdown-item {
+            color: white;
+        }
+
+        .navbar .dropdown-menu .dropdown-item:hover {
+            background-color: #0197D4;
+        }
+
+        @media (max-width: 991.98px) {
+            .custom-navbar-collapse {
+                background-color: rgba(2, 177, 244, 0.9);
+            }
+            .custom-navbar-collapse .nav-link,
+            .custom-navbar-collapse .navbar-brand,
+            .custom-navbar-collapse .dropdown-item {
+                color: white !important;
+            }
+        }
+</style>
 <body>
     <div class="d-flex flex-column min-vh-100">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+         <!-- Navbar -->
+         <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
             <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse custom-navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-celeste" href="{% url 'terapia_paciente' %}">Terapias</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownUsuarios" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Usuarios
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
+                            <a class="dropdown-item" href="{% url 'pacientes' %}">Pacientes</a>
+                            {% if is_superuser %}
+                            <a class="dropdown-item" href="{% url 'fisioterapeutas' %}">Terapeutas</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                 
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Gestión
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                            <a class="dropdown-item" href="{% url 'rehabilitacion_paciente' %}">Rehabilitación</a>
+                            <a class="dropdown-item" href="{% url 'gestion_motivo' %}">Motivos</a>
+                            <a class="dropdown-item" href="{% url 'gestion_movimiento' %}">Movimientos</a>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
