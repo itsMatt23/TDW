@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from terapias.models import leapMotion, Sesiones
 from .leapDatos.procesos_datos import crear_vector, procesar_datos_promediados
 import os
+from pymongo import MongoClient
+from django.conf import settings
 
 RUTA_NODO = "C:/Program Files/nodejs/node.exe"
 #ARCHIVO_JS = "leapDatos/recoleccion_datos.js"
@@ -52,25 +54,25 @@ def realizar_prediccion(normalizados):
 
 def guardar_en_django(datos_procesados, sesionID, num_repeticion):
     try:
-        array_datos_mano = datos_procesados.get('array_datos_mano', [])
-
-        # Crear o actualizar un registro en la base de datos de Django
+        # Guardar arrayDatos en MongoDB
+        # Guardar el resto de los datos en Django
         registro, creado = leapMotion.objects.update_or_create(
             sesionID=sesionID,
             num_repeticion=num_repeticion,
             defaults={
-                'resultado': datos_procesados.get('etiqueta'),  # Ajusta según tus datos
-                'arrayDatos': array_datos_mano,
+                'resultado': datos_procesados.get('etiqueta'),
             }
         )
-
         if creado:
             print(f"Se insertó un nuevo registro en Django con id: {registro.registroID}")
+            guardar_en_mongo(datos_procesados, registro.registroID, num_repeticion)
+            
         else:
             print(f"Se actualizó el registro existente en Django con id: {registro.registroID}")
+            guardar_en_mongo(datos_procesados, registro.registroID, num_repeticion)
 
     except Exception as e:
-        print(f"Error al insertar o actualizar registros: {str(e)}")
+        print(f"Error al insertar o actualizar registros en Django: {str(e)}")
 
 
 def procesar_toma(sesionID, num_repeticion):
@@ -113,7 +115,27 @@ def procesar_toma(sesionID, num_repeticion):
 
     return {"success": f"Predicción con clf: {etiqueta}. Repetición completada y guardada."}
 
+################################
+def conectar_mongo(db_name, collection_name):
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client[db_name]
+    collection = db[collection_name]
+    return collection
 
+def guardar_en_mongo(array_datos_mano, sesionID, num_repeticion):
+    try:
+        coleccion = conectar_mongo('terapias', 'terapias_leapmotion')
+        filtro = {
+            'sesionID': sesionID,  # Asegúrate de usar el identificador del objeto
+            'num_repeticion': num_repeticion
+        }
+        actualizacion = {'$set': {'arrayDatos': array_datos_mano}}
+        
+        resultado = coleccion.update_one(filtro, actualizacion, upsert=True)
+        if resultado.upserted_id is not None:
+            print(f"Se insertó un nuevo documento en MongoDB con id: {resultado.upserted_id}")
+        else:
+            print(f"Se actualizó el documento existente en MongoDB")
 
-
-
+    except Exception as e:
+        print(f"Error al insertar o actualizar documentos en MongoDB: {str(e)}")

@@ -77,4 +77,4 @@ class leapMotion(models.Model):
     num_repeticion = models.IntegerField()
     sesionID = models.ForeignKey(Sesiones, on_delete=models.CASCADE)
     resultado = models.IntegerField()
-    arrayDatos = models.JSONField()
+    #arrayDatos = models.JSONField()
