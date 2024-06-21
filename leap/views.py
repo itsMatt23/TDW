@@ -6,10 +6,14 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from terapias.models import leapMotion
 from .leapDatos.procesos_datos import crear_vector, procesar_datos_promediados
+import os
 
 RUTA_NODO = "C:/Program Files/nodejs/node.exe"
-ARCHIVO_JS = "leapDatos/recoleccion_datos.js"
-ARCHIVO_MODELO = 'clf_svm_poly.sav'
+#ARCHIVO_JS = "leapDatos/recoleccion_datos.js"
+ARCHIVO_JS = os.path.join(os.path.dirname(__file__), 'leapDatos', 'recoleccion_datos.js')
+
+ARCHIVO_MODELO = os.path.join(os.path.dirname(__file__), 'leapDatos', 'clf_svm_poly.sav')
+#ARCHIVO_MODELO = '/leap/leapDatos/clf_svm_poly.sav'
 
 modelo_df = joblib.load(ARCHIVO_MODELO)
 
@@ -96,8 +100,10 @@ def procesar_toma(id_Registro, num_repeticion):
 def principal(request):
     resultado = None
     if request.method == 'POST':
-        id_Registro = request.POST.get('id_Registro', 1)  # Ajusta esto según los datos que envíes desde el formulario
-        num_repeticion = request.POST.get('num_repeticion', 2)  # Ajusta esto según los datos que envíes desde el formulario
+        id_Registro = request.POST.get('id_Registro')  # Ajusta esto según los datos que envíes desde el formulario
+        num_repeticion = request.POST.get('num_repeticion')  # Ajusta esto según los datos que envíes desde el formulario
         resultado = procesar_toma(id_Registro, num_repeticion)
     return render(request, 'resultado.html', {'resultado': resultado})
+
+
 
