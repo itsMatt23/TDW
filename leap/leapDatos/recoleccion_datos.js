@@ -22,6 +22,7 @@ Leap.loop({ enableGestures: true }, (fotograma) => {
     }
   } else if (framesConDatos > 0) {
     Leap.loopController.disconnect();
+    console.log("Se apago")
     guardarDatos();
   }
 });

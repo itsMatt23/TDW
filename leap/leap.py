@@ -21,7 +21,7 @@ modelo_df = joblib.load(ARCHIVO_MODELO)
 def ejecutar_script_js():
     try:
         resultado = subprocess.run([RUTA_NODO, ARCHIVO_JS], capture_output=True, text=True)
-        print(resultado)
+        #print(resultado)
         if resultado.stderr:
             print("Errores:", resultado.stderr)
             return False
