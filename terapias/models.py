@@ -70,3 +70,11 @@ class Sesiones(models.Model):
 
     def __str__(self):
         return f"Sesión {self.sesionID} - Movimiento: {self.movimientoID.nombre}"
+
+####################################################################
+class leapMotion(models.Model):
+    registroID = models.AutoField(primary_key=True)
+    sesionID = models.ForeignKey(Sesiones, on_delete=models.CASCADE)
+    repeticion = models.IntegerField()
+    resultado = models.IntegerField()
+    arrayDatos = models.JSONField()
