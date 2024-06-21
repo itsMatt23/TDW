@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'terapias', 'leap'
+    'terapias', 'leap', 'djangotoolbox',
 ]
 
 MIDDLEWARE = [

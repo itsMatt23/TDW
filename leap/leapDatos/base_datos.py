@@ -11,11 +11,12 @@ def conectar_mongo(db_name, collection_name):
     return coleccion
 
 
-def guardar_en_mongo(datos_procesados, id_Registro, num_repeticion):
+def guardar_en_mongo(datos_procesados, sesionID, num_repeticion):
     try:
         coleccion = conectar_mongo(BASE_DATOS, COLECCION_LEAP_MOTION)
-        filtro = {'id_Registro': id_Registro, 'num_repeticion': num_repeticion}
+        filtro = {'id_Registro': sesionID, 'num_repeticion': num_repeticion}
         actualizacion = {'$set': datos_procesados}
+        
         resultado = coleccion.update_one(filtro, actualizacion, upsert=True)
         if resultado.upserted_id is not None:
             print(

@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Resultado de la Predicción</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado</title>
 </head>
 <body>
-    <h1>Resultado de la Predicción</h1>
+    <h1>Resultado del Procesamiento</h1>
     {% if resultado %}
-        {% if resultado.error %}
-            <p style="color: red;">Error: {{ resultado.error }}</p>
-        {% else %}
-            <p style="color: green;">{{ resultado.success }}</p>
-        {% endif %}
+        <p>{{ resultado }}</p>
     {% endif %}
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
-        <label for="id_Registro">ID Registro:</label>
-        <input type="text" id="id_Registro" name="id_Registro" required><br>
+        <label for="sesionID">ID de Sesión:</label>
+        <input type="text" id="sesionID" name="sesionID">  <!-- Cambiado de id_Registro a sesionID -->
+        <br>
         <label for="num_repeticion">Número de Repetición:</label>
-        <input type="text" id="num_repeticion" name="num_repeticion" required><br>
+        <input type="text" id="num_repeticion" name="num_repeticion">
+        <br>
         <button type="submit">Procesar</button>
     </form>
 </body>
