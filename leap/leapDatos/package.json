@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "chart.js": "^4.4.3",
+    "dsp.js": "^1.0.1",
+    "fili": "^2.0.3",
+    "leapjs": "^1.1.1"
+  }
+}

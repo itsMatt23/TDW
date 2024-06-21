@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado</title>
+</head>
+<body>
+    <h1>Resultado del Procesamiento</h1>
+    {% if resultado %}
+        <p>{{ resultado }}</p>
+    {% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <label for="sesionID">ID de Sesión:</label>
+        <input type="text" id="sesionID" name="sesionID">  <!-- Cambiado de id_Registro a sesionID -->
+        <br>
+        <label for="num_repeticion">Número de Repetición:</label>
+        <input type="text" id="num_repeticion" name="num_repeticion">
+        <br>
+        <button type="submit">Procesar</button>
+    </form>
+</body>
+</html>
