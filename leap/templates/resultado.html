@@ -3,56 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado</title>
+    <title>Procesar Repeticiones</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>Resultado del Procesamiento</h1>
+    <h1>Procesar Repeticiones</h1>
 
-    <div id="resultados">
-        <!-- Aquí se mostrarán los resultados dinámicamente -->
-    </div>
-
-    <form id="procesarForm">
-        {% csrf_token %}
-        <label for="sesionID">ID de Sesión:</label>
-        <input type="text" id="sesionID" name="sesionID">
-        <br>
-        <label for="num_repeticiones">Número de Repeticiones:</label>
-        <input type="text" id="num_repeticiones" name="num_repeticiones">
-        <br>
-        <button type="submit">Procesar</button>
-    </form>
+    <div id="resultados"></div>
+    <div id="promedio"></div>
+    <button id="volver" style="display: none;" onclick="window.history.back();">Volver atrás</button>
 
     <script>
         $(document).ready(function() {
-            $('#procesarForm').on('submit', function(event) {
-                event.preventDefault();
-                var form = $(this);
-                var url = form.attr('action');
-                var formData = form.serialize();
+            var sesionID = '{{ sesionID }}';
+            var num_repeticiones = '{{ num_repeticiones }}';
+            var csrfToken = '{{ csrf_token }}';
 
+            var totalMovimientosBuenos = 0; // Variable para sumar los movimientos buenos
+            var totalRepeticiones = 0; // Contador de repeticiones completadas
+
+            function procesarRepeticion(i) {
                 $.ajax({
                     type: 'POST',
-                    url: url,
-                    data: formData,
-                    dataType: 'json',
-                    success: function(data) {
-                        // Iteramos sobre los resultados y los mostramos
-                        data.forEach(function(resultado) {
-                            $('#resultados').append('<h2>Repetición ' + resultado.numero_repeticion + '</h2><p>' + resultado.resultado + '</p><hr>');
-                        });
+                    url: '{% url "procesar_repeticion" %}',
+                    data: {
+                        'sesionID': sesionID,
+                        'num_repeticion': i,
+                        'csrfmiddlewaretoken': csrfToken
+                    },
+                    success: function(response) {
+                        var etiqueta = response.resultado.etiqueta.replace('[', '').replace(']', '');  // Eliminar corchetes
+                        var mensaje = etiqueta === '0' ? 'Repetición mala' : (etiqueta === '1' ? 'Repetición buena' : 'Valor no reconocido');
+                        $('#resultados').append('<h2>Repetición ' + response.numero_repeticion + '</h2><p>' + mensaje + '</p><hr>');
+                        
+                        // Calcular promedio de movimientos buenos
+                        if (etiqueta === '1') {
+                            totalMovimientosBuenos++;
+                        }
+
+                        totalRepeticiones++;
+
+                        // Verificar si se han completado todas las repeticiones
+                        if (totalRepeticiones === parseInt(num_repeticiones)) {
+                            var promedio = totalMovimientosBuenos / totalRepeticiones;
+                            $('#promedio').text('Promedio de exito: ' + promedio.toFixed(2) * 100 + '%');
+                            $('#volver').show(); // Mostrar el botón de volver al final
+                        } else {
+                            // Procesar la siguiente repetición
+                            procesarRepeticion(i + 1);
+                        }
                     },
                     error: function(xhr, errmsg, err) {
                         console.log(xhr.status + ": " + xhr.responseText);
-                    },
-                    complete: function() {
-                        // Limpiamos los campos del formulario
-                        $('#sesionID').val('');
-                        $('#num_repeticiones').val('');
                     }
                 });
-            });
+            }
+
+            procesarRepeticion(1);
         });
     </script>
 </body>

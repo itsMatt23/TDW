@@ -114,10 +114,13 @@ def procesar_toma(sesionID, num_repeticion):
 
         guardar_en_django(datos_procesados, sesion, num_repeticion)
         print("Predicción con clf:", etiqueta)
+        
         print(f"Repetición {num_repeticion} completada y guardada.")
         exito = True
 
-    return {"success": f"Predicción con clf: {etiqueta}. Repetición completada y guardada."}
+    #return {"success": f"Predicción con clf: {etiqueta}. Repetición completada y guardada."}
+    return {"etiqueta": f"{etiqueta}"}
+
 
 ################################
 #Parte Mongo#
