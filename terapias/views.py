@@ -7,6 +7,10 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from .models import Fisioterapeutas
 from django.db.models import Q  # Importar Q para las consultas OR
+#Leap
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from leap.leap import procesar_toma
 
 # Renderiza la plantilla index.html
 def home_view(request):
@@ -73,7 +77,6 @@ def gestion_paciente(request, cedula):
             'rehabilitaciones': rehabilitaciones,
             'motivos': motivos,  # Pasar los motivos al contexto del template
         })
-
 ##################################################
 #Gestion de Rehabilitaciones-Terapias-Movimientos#
 #Rehabilitacion
@@ -182,25 +185,7 @@ def movimientos(request, terapia_id):
         'terapia': terapia,
         'sesiones': sesiones,
     })
-
-#Metodo que permite actulizar las sesiones para que no vuelvan a hacer!!!
-def actualizar_sesiones(request):
-    if request.method == 'POST':
-
-        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
-        for sesion_id in sesiones_seleccionadas:
-            sesion = Sesiones.objects.get(pk=sesion_id)
-            sesion.estado = True  # Actualiza el estado de la sesión seleccionada
-            sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
-            sesion.save()
-
-        return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
     
-    else:
-        # Manejo si el método no es POST (opcional dependiendo de la lógica deseada)
-        pass
-
-#################################
 #Gestion de Pacientes-Terapeutas#
 #Pacientes
 def pacientes(request):
@@ -352,3 +337,65 @@ def gestion_motivo(request):
         'crear_motivo': crear_motivo,
     }
     return render(request, 'gestion_motivos.html', context)
+
+
+#########Leap Configuracion
+#Metodo que permite actulizar las sesiones para que no vuelvan a hacer!!!
+def actualizar_sesiones(request):
+    if request.method == 'POST':
+        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
+        
+        # Guardar las sesiones seleccionadas en la sesión si no están ya allí
+        if 'sesiones_seleccionadas' not in request.session:
+            request.session['sesiones_seleccionadas'] = sesiones_seleccionadas
+            request.session['posicion_actual'] = 0
+        
+        # Obtener la posición actual desde la sesión
+        posicion_actual = request.session.get('posicion_actual', 0)
+        
+        if posicion_actual < len(request.session['sesiones_seleccionadas']):
+            sesion_id = request.session['sesiones_seleccionadas'][posicion_actual]
+            sesion = Sesiones.objects.get(pk=sesion_id)
+            sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
+            sesion.save()
+            
+            # Redirigir a la vista de procesamiento de repeticiones
+            return redirect(reverse('procesar_repeticiones') + f'?sesionID={sesion_id}&num_repeticiones={sesion.repeticiones}')
+        else:
+            # Limpiar la sesión cuando se hayan procesado todas las sesiones
+            sesion = Sesiones.objects.get(pk=posicion_actual)
+            del request.session['sesiones_seleccionadas']
+            del request.session['posicion_actual']
+            return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
+    else:
+        return render(request, 'movimientos.html') 
+
+
+def procesar_repeticiones_view(request):
+    sesion_id = request.GET.get('sesionID')
+    num_repeticiones = request.GET.get('num_repeticiones')
+    
+    sesion = Sesiones.objects.get(pk=sesion_id)
+    
+    context = {
+        'sesionID': sesion_id,
+        'num_repeticiones': num_repeticiones,
+        'sesion_terapia': sesion.terapiaID, 
+    }
+    
+    return render(request, 'resultado.html', context)
+
+@csrf_exempt
+def procesar_repeticion(request):
+    if request.method == 'POST':
+        sesionID = request.POST.get('sesionID')
+        num_repeticion = request.POST.get('num_repeticion')
+        try:
+            sesionID = int(sesionID)
+            num_repeticion = int(num_repeticion)
+            resultado = procesar_toma(sesionID, num_repeticion)
+            
+            return JsonResponse({'numero_repeticion': num_repeticion, 'resultado': resultado})
+        except ValueError:
+            return JsonResponse({'error': "Sesión ID y Número de Repetición deben ser números enteros."}, status=400)
+        

@@ -34,6 +34,7 @@
                 color: white !important;
             }
         }
+        
 </style>
 
 <body>
@@ -122,6 +123,12 @@
                                     {{ sesion.movimientoID.nombre }}
                                 </div>
                                 <!-- Acciones -->
+                                <div class="d-flex align-items-center">
+                                    {% if sesion.estado %}
+                                    Porcentaje: {{ sesion.porcentaje }}%
+                                    {% endif %} 
+                                </div>
+
                                 <div class="d-flex align-items-center">
                                     Repeticiones:
                                     <div class="form-group mb-0 mr-3" style="padding-left: 10px;">
