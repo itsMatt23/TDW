@@ -1,9 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Session</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesiones</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
+
 <body>
     <h1>Session ID: {{ session_id }}</h1>
     <p> Repeticiones: {{ repeticion }}</p>
@@ -20,7 +26,26 @@
     {% endif %}
     <br>
     <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="btn btn-primary">Volver atrás</a>
+    <button type="button" onclick="window.location.reload();" class="btn btn-primary">Reiniciar</button>
+    
+        <!-- Footer -->
+        <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
+            <div class="container p-4">
+                <div class="row">
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <h4 class="text-uppercase text-white">Síguenos en nuestras redes sociales!</h4>
+                        <a href="#"><img src="{% static 'imagenes/facebook.png' %}" alt="Facebook" width="70" height="70" /></a>
+                        <a href="#"><img src="{% static 'imagenes/twitter.png' %}" alt="Twitter" width="92" height="92" /></a>
+                        <a href="#"><img src="{% static 'imagenes/instagram.png' %}" alt="Instagram" width="110" height="80" /></a>
+                    </div>
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <p class="text-white">&copy; 2024 Terapias. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
 
+</div>
     <script>
         $(document).ready(function() {
             var sesionID = '{{ session_id }}';
