@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Session ID: {{ session_id }}</h1>
+    <p> Repeticiones: {{ repeticion }}</p>
+    <p> Terapia ID: {{ terapiaID.terapiaID }}</p>
+
+    <h1>Procesar Repeticiones</h1>
+
+    <div id="resultados"></div>
+    <div id="promedio"></div>
+
+    {% if next_index < sesiones_seleccionadas|length %}
+    <a href="{% url 'show_session' next_index %}">Siguiente</a>
+    
+    {% endif %}
+    <br>
+    <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="btn btn-primary">Volver atrás</a>
+
+    <script>
+        $(document).ready(function() {
+            var sesionID = '{{ session_id }}';
+            var num_repeticiones = '{{ repeticion }}';
+            var csrfToken = '{{ csrf_token }}';
+
+            var totalMovimientosBuenos = 0;
+            var totalRepeticiones = 0;
+
+            function procesarRepeticion(i) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "procesar_repeticion" %}',
+                    data: {
+                        'sesionID': sesionID,
+                        'num_repeticion': i,
+                        'csrfmiddlewaretoken': csrfToken
+                    },
+                    success: function(response) {
+                        var etiqueta = response.resultado.etiqueta.replace('[', '').replace(']', '');
+                        var mensaje = etiqueta === '0' ? 'Repetición mala' : (etiqueta === '1' ? 'Repetición buena' : 'Valor no reconocido');
+                        $('#resultados').append('<h2>Repetición ' + response.numero_repeticion + '</h2><p>' + mensaje + '</p><hr>');
+
+                        if (etiqueta === '1') {
+                            totalMovimientosBuenos++;
+                        }
+
+                        totalRepeticiones++;
+
+                        if (totalRepeticiones === parseInt(num_repeticiones)) {
+                            var promedio = totalMovimientosBuenos / totalRepeticiones;
+                            $('#promedio').text('Promedio de éxito: ' + (promedio * 100).toFixed(2) + '%');
+                            //Actulizar el porcentaje
+                            $.ajax({
+                                type: 'POST',
+                                url: '{% url "actualizar_porcentaje" %}',
+                                data: {
+                                    'sesionID': sesionID,
+                                    'porcentaje': promedio,
+                                    'totalRepeticiones': totalRepeticiones,
+                                    'csrfmiddlewaretoken': csrfToken
+                                },
+                                success: function(response) {
+                                    console.log('Porcentaje actualizado correctamente en la base de datos.');
+                                },
+                                error: function(xhr, errmsg, err) {
+                                    console.log('Error al actualizar el porcentaje en la base de datos:', xhr.status + ": " + xhr.responseText);
+                                }
+                            });
+                        } else {
+                            procesarRepeticion(i + 1);
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log(xhr.status + ": " + xhr.responseText);
+                    }
+                });
+            }
+
+            procesarRepeticion(1); // Iniciar el proceso de repeticiones
+        });
+    </script>
+</body>
+</html>

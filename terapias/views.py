@@ -340,50 +340,45 @@ def gestion_motivo(request):
 
 
 #########Leap Configuracion
-#Metodo que permite actulizar las sesiones para que no vuelvan a hacer!!!
+#Metodo que permite actualizar las sesiones para que no vuelvan a hacer!!!
 def actualizar_sesiones(request):
     if request.method == 'POST':
-        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
+        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas', [])
+        print(sesiones_seleccionadas)
         
-        # Guardar las sesiones seleccionadas en la sesión si no están ya allí
-        if 'sesiones_seleccionadas' not in request.session:
-            request.session['sesiones_seleccionadas'] = sesiones_seleccionadas
-            request.session['posicion_actual'] = 0
-        
-        # Obtener la posición actual desde la sesión
-        posicion_actual = request.session.get('posicion_actual', 0)
-        
-        if posicion_actual < len(request.session['sesiones_seleccionadas']):
-            sesion_id = request.session['sesiones_seleccionadas'][posicion_actual]
-            sesion = Sesiones.objects.get(pk=sesion_id)
-            sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
-            sesion.save()
+        repeticiones = {}
+        for sesion_id in sesiones_seleccionadas:
+            repeticiones[sesion_id] = request.POST.get(f'repeticiones_{sesion_id}')
             
-            # Redirigir a la vista de procesamiento de repeticiones
-            return redirect(reverse('procesar_repeticiones') + f'?sesionID={sesion_id}&num_repeticiones={sesion.repeticiones}')
-        else:
-            # Limpiar la sesión cuando se hayan procesado todas las sesiones
-            sesion = Sesiones.objects.get(pk=posicion_actual)
-            del request.session['sesiones_seleccionadas']
-            del request.session['posicion_actual']
-            return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
-    else:
-        return render(request, 'movimientos.html') 
+        request.session['sesiones_seleccionadas'] = sesiones_seleccionadas
+        request.session['repeticiones'] = repeticiones
 
+        return redirect(reverse('show_session', kwargs={'index': 0}))
 
-def procesar_repeticiones_view(request):
-    sesion_id = request.GET.get('sesionID')
-    num_repeticiones = request.GET.get('num_repeticiones')
-    
-    sesion = Sesiones.objects.get(pk=sesion_id)
-    
+def show_session(request, index):
+    sesiones_seleccionadas = request.session.get('sesiones_seleccionadas', [])
+    repeticiones = request.session.get('repeticiones', {})
+
+    if not sesiones_seleccionadas or index >= len(sesiones_seleccionadas):
+        return JsonResponse({'error': "No hay más sesiones o índice fuera de rango."}, status=400)
+
+    try:
+        index = int(index)
+    except ValueError:
+        return JsonResponse({'error': "Índice debe ser un número entero válido."}, status=400)
+
+    session_id = sesiones_seleccionadas[index]
+    num_repeticiones = repeticiones.get(session_id, "N/A")
+    session = Sesiones.objects.get(pk=session_id)
+
     context = {
-        'sesionID': sesion_id,
-        'num_repeticiones': num_repeticiones,
-        'sesion_terapia': sesion.terapiaID, 
+        'session_id': session_id,
+        'repeticion': num_repeticiones,
+        'terapiaID': session.terapiaID,
+        'next_index': index + 1,
+        'sesiones_seleccionadas': sesiones_seleccionadas
     }
-    
-    return render(request, 'resultado.html', context)
+    return render(request, 'show_session.html', context)
 
 @csrf_exempt
 def procesar_repeticion(request):
@@ -395,7 +390,27 @@ def procesar_repeticion(request):
             num_repeticion = int(num_repeticion)
             resultado = procesar_toma(sesionID, num_repeticion)
             
+            
             return JsonResponse({'numero_repeticion': num_repeticion, 'resultado': resultado})
         except ValueError:
             return JsonResponse({'error': "Sesión ID y Número de Repetición deben ser números enteros."}, status=400)
-        
+
+
+@csrf_exempt
+def actualizar_porcentaje(request):
+    if request.method == 'POST':
+        sesionID = request.POST.get('sesionID')
+        porcentaje = request.POST.get('porcentaje')
+        repeticiones = request.POST.get('totalRepeticiones')
+        try:
+            sesion = Sesiones.objects.get(pk=sesionID)
+            sesion.estado = True  # Actualiza el estado de la sesión seleccionada
+            sesion.repeticiones = repeticiones
+            sesion.porcentaje = float(porcentaje) * 100  # Guarda el porcentaje multiplicado por 100
+            sesion.save()
+            
+            return JsonResponse({'message': "Porcentaje actualizado correctamente."})
+        except Sesiones.DoesNotExist:
+            return JsonResponse({'error': "Sesión no encontrada."}, status=404)
+        except ValueError:
+            return JsonResponse({'error': "Porcentaje debe ser un número válido."}, status=400)

@@ -99,10 +99,14 @@
                         </li>
                     </ul>
                     <div class="text-center mb-4" style="padding-top: 10px;">
-                        <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
                         <a href="{% url 'gestion_movimiento' %}" class="btn btn-primary">
                             <i class="fas fa-dumbbell"></i> Movimientos
                         </a>
+                        
+                        <a href="{% url 'terapias' terapia.rehabilitacionID.rehabilitacionID %}" class="btn btn-secondary">
+                            Volver a atrás
+                        </a>
+
                     </div>
                   
                 </div>

@@ -9,8 +9,11 @@ urlpatterns = [
 
     path('rehabilitacion_paciente/', views.rehabilitacion_paciente, name='rehabilitacion_paciente'), ##Esta es la nueva vista de rehabilitaciones
     path('terapias/<int:rehabilitacion_id>/', views.terapias, name='terapias'), ##Esta es la nueva vista de terapias
+    
     path('movimientos/<int:terapia_id>/', views.movimientos, name='movimientos'), #Movimientos
     path('actualizar_sesiones/', views.actualizar_sesiones, name='actualizar_sesiones'),
+    path('actualizar_sesiones/session/<int:index>/', views.show_session, name='show_session'),
+
 
     path('/movimientos/editar/', views.gestion_movimiento, name='gestion_movimiento'), #Agregar y editar Movimientos
     path('gestion_motivo/', views.gestion_motivo, name='gestion_motivo'), #Agregar y editar Motivos
@@ -25,11 +28,8 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),  # no cambiar
     
     #Leap
-    path('procesar-repeticiones/', views.procesar_repeticiones_view, name='procesar_repeticiones'),
+    path('session/<int:index>/', views.show_session, name='show_session'),
     path('procesar-repeticion/', views.procesar_repeticion, name='procesar_repeticion'),
-
-
-
-
+    path('actualizar-porcentaje/', views.actualizar_porcentaje, name='actualizar_porcentaje'),
 ]
 
