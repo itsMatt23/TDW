@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,41 +11,82 @@
 </head>
 
 <body>
-    <h1>Session ID: {{ session_id }}</h1>
-    <p> Repeticiones: {{ repeticion }}</p>
-    <p> Terapia ID: {{ terapiaID.terapiaID }}</p>
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <a class="navbar-brand text-celeste" href="#">
+                <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                Terapias
+            </a>
 
-    <h1>Procesar Repeticiones</h1>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="nav-link text-celeste">Salir</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <br>
+        <div class="container-fluid">
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-8">
+                    <!-- Recuadro grande -->
+                    <div class="border rounded p-4 mb-4">
+                        <h3 class="text-center mb-4">{{movimientos}}</h3>
+                        <div class="row">
+                            <!-- Card de la izquierda -->
+                            <div class="col-md-6">
+        
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Resultados</h5>
+                                        <!-- Lista de ejercicios -->
+                                        <div id="lista-repeticiones" class="list-group scroll-container">
+                                            <!-- Repeticiones serán agregadas dinámicamente aquí -->
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            <!-- Card de la derecha -->
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="embed-responsive embed-responsive-16by9">
+                                            <iframe class="embed-responsive-item" src={{movimientos.url}} frameborder="0" allowfullscreen></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card del resultado final -->
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Promedio de éxito:</h5>
+                                        <!-- Valor en porcentaje -->
+                                        <h5 id="promedio" class="text-center"></h5>
+                                        <br>
+                                        {% if next_index < sesiones_seleccionadas|length %}
+                                        <button type="button" onclick="window.location.reload();" class="btn btn-secondary btn-block mt-3">Reiniciar</button>
+                                        <a href="{% url 'show_session' next_index %}" class="btn btn-primary btn-block mt-3">Siguiente</a>
 
-    <div id="resultados"></div>
-    <div id="promedio"></div>
-
-    {% if next_index < sesiones_seleccionadas|length %}
-    <a href="{% url 'show_session' next_index %}">Siguiente</a>
-    
-    {% endif %}
-    <br>
-    <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="btn btn-primary">Volver atrás</a>
-    <button type="button" onclick="window.location.reload();" class="btn btn-primary">Reiniciar</button>
-    
-        <!-- Footer -->
-        <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
-            <div class="container p-4">
-                <div class="row">
-                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
-                        <h4 class="text-uppercase text-white">Síguenos en nuestras redes sociales!</h4>
-                        <a href="#"><img src="{% static 'imagenes/facebook.png' %}" alt="Facebook" width="70" height="70" /></a>
-                        <a href="#"><img src="{% static 'imagenes/twitter.png' %}" alt="Twitter" width="92" height="92" /></a>
-                        <a href="#"><img src="{% static 'imagenes/instagram.png' %}" alt="Instagram" width="110" height="80" /></a>
-                    </div>
-                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
-                        <p class="text-white">&copy; 2024 Terapias. Todos los derechos reservados.</p>
+                                        {% else %}
+                                        <button type="button" onclick="window.location.reload();" class="btn btn-secondary btn-block mt-3">Reiniciar</button>
+                                        <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="btn btn-dark btn-block mt-3">Terminar</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </footer>
+        </div>
+    </div>
 
-</div>
     <script>
         $(document).ready(function() {
             var sesionID = '{{ session_id }}';
@@ -69,6 +110,14 @@
                         var mensaje = etiqueta === '0' ? 'Repetición mala' : (etiqueta === '1' ? 'Repetición buena' : 'Valor no reconocido');
                         $('#resultados').append('<h2>Repetición ' + response.numero_repeticion + '</h2><p>' + mensaje + '</p><hr>');
 
+                        // Actualizar lista de repeticiones
+                        var etiquetaTexto = etiqueta === '0' ? 'Repetición mala' : (etiqueta === '1' ? 'Repetición buena' : 'Valor no reconocido');
+                        var itemHTML = '<a class="list-group-item list-group-item-action">' +
+                                            '<span class="exercise-name">Repetición ' + response.numero_repeticion + '</span>' +
+                                            '<span class="exercise-result">' + etiquetaTexto + '</span>' +
+                                        '</a>';
+                        $('#lista-repeticiones').append(itemHTML);
+
                         if (etiqueta === '1') {
                             totalMovimientosBuenos++;
                         }
@@ -77,8 +126,10 @@
 
                         if (totalRepeticiones === parseInt(num_repeticiones)) {
                             var promedio = totalMovimientosBuenos / totalRepeticiones;
-                            $('#promedio').text('Promedio de éxito: ' + (promedio * 100).toFixed(2) + '%');
-                            //Actulizar el porcentaje
+
+                            $('#promedio').text((promedio * 100).toFixed(2) + '%');
+
+                            // Actualizar el porcentaje en la base de datos
                             $.ajax({
                                 type: 'POST',
                                 url: '{% url "actualizar_porcentaje" %}',

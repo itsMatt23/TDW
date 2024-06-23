@@ -375,6 +375,7 @@ def show_session(request, index):
         'session_id': session_id,
         'repeticion': num_repeticiones,
         'terapiaID': session.terapiaID,
+        'movimientos': session.movimientoID,
         'next_index': index + 1,
         'sesiones_seleccionadas': sesiones_seleccionadas
     }
@@ -406,7 +407,8 @@ def actualizar_porcentaje(request):
             sesion = Sesiones.objects.get(pk=sesionID)
             sesion.estado = True  # Actualiza el estado de la sesión seleccionada
             sesion.repeticiones = repeticiones
-            sesion.porcentaje = float(porcentaje) * 100  # Guarda el porcentaje multiplicado por 100
+            #sesion.porcentaje = float(porcentaje) * 100  # Guarda el porcentaje multiplicado por 100
+            sesion.porcentaje = round(float(porcentaje) * 100, 2)
             sesion.save()
             
             return JsonResponse({'message': "Porcentaje actualizado correctamente."})
