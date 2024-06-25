@@ -10,28 +10,28 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <style>
-            .navbar .dropdown-menu {
+    .navbar .dropdown-menu {
+        background-color: rgba(2, 177, 244, 0.9);
+    }
+
+    .navbar .dropdown-menu .dropdown-item {
+        color: white;
+    }
+
+    .navbar .dropdown-menu .dropdown-item:hover {
+        background-color: #0197D4;
+    }
+
+    @media (max-width: 991.98px) {
+        .custom-navbar-collapse {
             background-color: rgba(2, 177, 244, 0.9);
         }
-
-        .navbar .dropdown-menu .dropdown-item {
-            color: white;
+        .custom-navbar-collapse .nav-link,
+        .custom-navbar-collapse .navbar-brand,
+        .custom-navbar-collapse .dropdown-item {
+            color: white !important;
         }
-
-        .navbar .dropdown-menu .dropdown-item:hover {
-            background-color: #0197D4;
-        }
-
-        @media (max-width: 991.98px) {
-            .custom-navbar-collapse {
-                background-color: rgba(2, 177, 244, 0.9);
-            }
-            .custom-navbar-collapse .nav-link,
-            .custom-navbar-collapse .navbar-brand,
-            .custom-navbar-collapse .dropdown-item {
-                color: white !important;
-            }
-        }
+    }
 </style>
 <body>
     <div class="d-flex flex-column min-vh-100">
@@ -167,6 +167,9 @@
                                     <td>
                                         <a href="{% url 'terapias' rehabilitacion.rehabilitacionID %}" class="btn btn-info btn-sm">
                                             <i class="fas fa-dumbbell"></i> Terapias
+                                        </a>
+                                        <a href="{% url 'reporte_paciente' rehabilitacion.rehabilitacionID %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-file-alt"></i> Reporte
                                         </a>
                                         <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRehabModal{{ rehabilitacion.rehabilitacionID }}">
                                             <i class="fas fa-trash-alt"></i> Eliminar

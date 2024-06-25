@@ -5,99 +5,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <style>
-        .row {
-            display: flex;
-            justify-content: center;
-            align-items: baseline;
-            flex-wrap: wrap;
-        }
-        .c-container {
-            flex: 0 1 auto;
-            margin: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .c-container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-        .chart-container {
-            flex: 0 1 800px;
-            margin: 20px;
-        }
-        #m1, .chart-container {
-            text-align: center;
-        }
-        .card-body {
-            text-align: center;
-        }
-        .display-4 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #007bff;
-        }
-        .card-title {
-            font-weight: bold;
-            color: #343a40;
-        }
-        
-        .btn-celeste {
-            background-color: #00aaff;
-            border: none;
-        }
-        .btn-celeste:hover {
-            background-color: #007bff;
-        }
-        .input-group {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        footer {
-            background-color: #00aaff;
-            color: white;
-        }
-        .navbar .dropdown-menu {
-            background-color: rgba(2, 177, 244, 0.9);
-        }
-
-        .navbar .dropdown-menu .dropdown-item {
-            color: white;
-        }
-
-        .navbar .dropdown-menu .dropdown-item:hover {
-            background-color: #0197D4;
-        }
-
-        @media (max-width: 991.98px) {
-            .custom-navbar-collapse {
-                background-color: rgba(2, 177, 244, 0.9);
-            }
-            .custom-navbar-collapse .nav-link,
-            .custom-navbar-collapse .navbar-brand,
-            .custom-navbar-collapse .dropdown-item {
-                color: white !important;
-            }
-        }
+        /* Tus estilos personalizados */
     </style>
 </head>
 
 <body>
     <div class="d-flex flex-column min-vh-100">
         <!-- Navbar -->
-         <!-- Navbar -->
-         <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
             <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
-            <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse custom-navbar-collapse" id="navbarNav">
@@ -116,7 +42,6 @@
                             {% endif %}
                         </div>
                     </li>
-                 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Gestión
@@ -137,66 +62,64 @@
             </div>
         </nav>
         <br><br>
-        
+
         <div class="container mt-5">
-            <div class="row justify-content-center my-4">
-                <div class="col-md-8">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Buscar paciente" id="buscarPaciente">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
+            <h1>Dashboard</h1>
+
+            <!-- Formulario para seleccionar el año -->
+            <form method="get" action="{% url 'dashboard' %}" class="form-inline mb-4">
+                <label for="year" class="mr-2">Seleccionar Año:</label>
+                <select name="year" id="year" class="form-control mr-2">
+                    {% for year in year_range %}
+                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </form>
+            <div class="row">
+                <div class="col-lg-12 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Terapias por Mes en el Año {{ selected_year }}</h5>
+                            <div class="chart-container">
+                                <canvas id="terapiasPorMesChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="row">
-                <div class="col-lg-6">
-                    <div class="card c-container">
-                        <div class="card-body">
-                            <h5 class="card-title">Asistencia por Mes</h5>
-                            <canvas id="myChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card c-container">
-                        <div class="card-body">
-                            <h5 class="card-title">Terapias Correctas vs Incorrectas</h5>
-                            <canvas id="comparisonChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="card c-container">
-                        <div class="card-body">
-                            <h5 class="card-title">Paciente</h5>
-                            <p class="card-text">Cédula: 128932014</p>
-                            <p class="card-text">Nombre: Javier</p>
-                            <p class="card-text">Apellido: Apellido</p>
-                        </div>
-                    </div>
-                    <div class="card c-container">
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
                         <div class="card-body">
                             <h5 class="card-title">Total de Terapias</h5>
-                            <p class="display-4">20</p>
+                            <p class="display-4">{{ total_terapias }}</p>
                         </div>
                     </div>
-                    <div class="card c-container">
+                </div>
+
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
                         <div class="card-body">
-                            <h5 class="card-title">Terapias Correctas</h5>
-                            <p class="display-4">15</p>
+                            <h5 class="card-title">Total de Pacientes</h5>
+                            <p class="display-4">{{ total_pacientes }}</p>
                         </div>
                     </div>
-                    <div class="card c-container">
+                </div>
+
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
                         <div class="card-body">
-                            <h5 class="card-title">Terapias Incorrectas</h5>
-                            <p class="display-4">5</p>
+                            <h5 class="card-title">Terapias por Motivo</h5>
+                            <div class="chart-container">
+                                <canvas id="terapiasPorMotivo"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+          
         </div>
 
         <!-- Footer -->
@@ -241,61 +164,75 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
     <script>
-        var data = {
-            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        var labels = {{ labels|safe }};
+        var data = {{ data|safe }};
+        var motivoLabels = {{ motivo_labels|safe }};
+        var motivoData = {{ motivo_data|safe }};
+
+        var terapiasPorMesData = {
+            labels: labels,
             datasets: [{
-                label: 'Asistencia',
-                data: [2, 1, 3, 4, 2, 5, 6, 3, 2, 4, 5, 6],
+                label: 'Número de Terapias',
+                data: data,
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
             }]
         };
 
-        var config = {
-            type: 'line',
-            data: data,
+        var terapiasPorMesConfig = {
+            type: 'bar',
+            data: terapiasPorMesData,
             options: {
                 scales: {
                     y: {
                         beginAtZero: true
                     }
-                },
-                aspectRatio: 2
+                }
             }
         };
 
-        var comparisonData = {
-            labels: ['Correctas', 'Incorrectas'],
+        var terapiasPorMesChart = new Chart(
+            document.getElementById('terapiasPorMesChart'),
+            terapiasPorMesConfig
+        );
+
+        var terapiasPorMotivoData = {
+            labels: motivoLabels,
             datasets: [{
-                data: [15, 5],
-                backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
-                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                label: 'Número de Terapias',
+                data: motivoData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
                 borderWidth: 1
             }]
         };
 
-        var comparisonConfig = {
-            type: 'bar',
-            data: comparisonData,
+        var terapiasPorMotivoConfig = {
+            type: 'pie',
+            data: terapiasPorMotivoData,
             options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                aspectRatio: 2
+                responsive: true
             }
         };
 
-        var myChart = new Chart(
-            document.getElementById('myChart'),
-            config
-        );
-
-        var comparisonChart = new Chart(
-            document.getElementById('comparisonChart'),
-            comparisonConfig
+        var terapiasPorMotivoChart = new Chart(
+            document.getElementById('terapiasPorMotivo'),
+            terapiasPorMotivoConfig
         );
     </script>
 </body>

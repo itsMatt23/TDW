@@ -108,7 +108,11 @@
                             </button>
                         </form>
 
-                        <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
+                        
+                        <a href="{% url 'gestion_paciente' rehabilitacion.paciente_id %}" class="btn btn-secondary">
+                            Volver a atrás
+                        </a>
+
                     </div>                  
                 </div>
             </div>

@@ -7,6 +7,17 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from .models import Fisioterapeutas
 from django.db.models import Q  # Importar Q para las consultas OR
+#Leap
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from leap.leap import procesar_toma
+
+import datetime
+from django.db.models.functions import TruncMonth
+
+from django.db.models.functions import ExtractMonth, ExtractYear
+from datetime import datetime as dt
+from django.db.models import Count, Q,Avg
 
 # Renderiza la plantilla index.html
 def home_view(request):
@@ -73,7 +84,6 @@ def gestion_paciente(request, cedula):
             'rehabilitaciones': rehabilitaciones,
             'motivos': motivos,  # Pasar los motivos al contexto del template
         })
-
 ##################################################
 #Gestion de Rehabilitaciones-Terapias-Movimientos#
 #Rehabilitacion
@@ -182,25 +192,7 @@ def movimientos(request, terapia_id):
         'terapia': terapia,
         'sesiones': sesiones,
     })
-
-#Metodo que permite actulizar las sesiones para que no vuelvan a hacer!!!
-def actualizar_sesiones(request):
-    if request.method == 'POST':
-
-        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas')
-        for sesion_id in sesiones_seleccionadas:
-            sesion = Sesiones.objects.get(pk=sesion_id)
-            sesion.estado = True  # Actualiza el estado de la sesión seleccionada
-            sesion.repeticiones = request.POST.get(f'repeticiones_{sesion_id}')
-            sesion.save()
-
-        return redirect('movimientos', terapia_id=sesion.terapiaID.pk)
     
-    else:
-        # Manejo si el método no es POST (opcional dependiendo de la lógica deseada)
-        pass
-
-#################################
 #Gestion de Pacientes-Terapeutas#
 #Pacientes
 def pacientes(request):
@@ -352,3 +344,200 @@ def gestion_motivo(request):
         'crear_motivo': crear_motivo,
     }
     return render(request, 'gestion_motivos.html', context)
+
+
+#########Leap Configuracion
+#Metodo que permite actualizar las sesiones para que no vuelvan a hacer!!!
+def actualizar_sesiones(request):
+    if request.method == 'POST':
+        sesiones_seleccionadas = request.POST.getlist('sesiones_seleccionadas', [])
+        print(sesiones_seleccionadas)
+        
+        repeticiones = {}
+        for sesion_id in sesiones_seleccionadas:
+            repeticiones[sesion_id] = request.POST.get(f'repeticiones_{sesion_id}')
+            
+        request.session['sesiones_seleccionadas'] = sesiones_seleccionadas
+        request.session['repeticiones'] = repeticiones
+
+        return redirect(reverse('show_session', kwargs={'index': 0}))
+
+def show_session(request, index):
+    sesiones_seleccionadas = request.session.get('sesiones_seleccionadas', [])
+    repeticiones = request.session.get('repeticiones', {})
+
+    if not sesiones_seleccionadas or index >= len(sesiones_seleccionadas):
+        return JsonResponse({'error': "No hay más sesiones o índice fuera de rango."}, status=400)
+
+    try:
+        index = int(index)
+    except ValueError:
+        return JsonResponse({'error': "Índice debe ser un número entero válido."}, status=400)
+
+    session_id = sesiones_seleccionadas[index]
+    num_repeticiones = repeticiones.get(session_id, "N/A")
+    session = Sesiones.objects.get(pk=session_id)
+
+    context = {
+        'session_id': session_id,
+        'repeticion': num_repeticiones,
+        'terapiaID': session.terapiaID,
+        'movimientos': session.movimientoID,
+        'next_index': index + 1,
+        'sesiones_seleccionadas': sesiones_seleccionadas
+    }
+    return render(request, 'show_session.html', context)
+
+@csrf_exempt
+def procesar_repeticion(request):
+    if request.method == 'POST':
+        sesionID = request.POST.get('sesionID')
+        num_repeticion = request.POST.get('num_repeticion')
+        try:
+            sesionID = int(sesionID)
+            num_repeticion = int(num_repeticion)
+            resultado = procesar_toma(sesionID, num_repeticion)
+            
+            
+            return JsonResponse({'numero_repeticion': num_repeticion, 'resultado': resultado})
+        except ValueError:
+            return JsonResponse({'error': "Sesión ID y Número de Repetición deben ser números enteros."}, status=400)
+
+
+@csrf_exempt
+def actualizar_porcentaje(request):
+    if request.method == 'POST':
+        sesionID = request.POST.get('sesionID')
+        porcentaje = request.POST.get('porcentaje')
+        repeticiones = request.POST.get('totalRepeticiones')
+        try:
+            sesion = Sesiones.objects.get(pk=sesionID)
+            sesion.estado = True  # Actualiza el estado de la sesión seleccionada
+            sesion.repeticiones = repeticiones
+            #sesion.porcentaje = float(porcentaje) * 100  # Guarda el porcentaje multiplicado por 100
+            sesion.porcentaje = round(float(porcentaje) * 100, 2)
+            sesion.save()
+            
+            return JsonResponse({'message': "Porcentaje actualizado correctamente."})
+        except Sesiones.DoesNotExist:
+            return JsonResponse({'error': "Sesión no encontrada."}, status=404)
+        except ValueError:
+            return JsonResponse({'error': "Porcentaje debe ser un número válido."}, status=400)
+
+
+
+##########################Dahsboard
+def dashboard_view(request):
+    year = request.GET.get('year', datetime.datetime.now().year)
+    year = int(year)  # Convertir el año a entero
+    terapias = Terapias.objects.filter(fecha__year=year)
+
+    # Agrupar terapias por mes en Python
+    terapias_por_mes = {}
+    for terapia in terapias:
+        mes = terapia.fecha.month
+        if mes not in terapias_por_mes:
+            terapias_por_mes[mes] = 0
+        terapias_por_mes[mes] += 1
+
+    # Ordenar los resultados por mes
+    sorted_terapias_por_mes = sorted(terapias_por_mes.items())
+
+    labels = [datetime.date(1900, mes, 1).strftime('%B') for mes, _ in sorted_terapias_por_mes]
+    data = [total for _, total in sorted_terapias_por_mes]
+
+    total_terapias = Terapias.objects.count()
+    total_pacientes = Pacientes.objects.count()
+    terapias_por_motivo = Motivos.objects.annotate(total=Count('rehabilitaciones__terapias')).order_by('nombre')
+
+    motivo_labels = [entry.nombre for entry in terapias_por_motivo]
+    motivo_data = [entry.total for entry in terapias_por_motivo]
+    
+    context = {
+        'total_terapias': total_terapias,
+        'total_pacientes': total_pacientes,
+        'labels': labels,
+        'data': data,
+        'motivo_labels': motivo_labels,
+        'motivo_data': motivo_data,
+        'year_range': range(2023, 2035),
+        'selected_year': year,
+    }
+    return render(request, 'dashboard.html', context)
+from django.db import connection
+from django.shortcuts import render, get_object_or_404
+
+import datetime
+def reporte_paciente(request, rehabilitacion_id):
+    # Obtén el objeto Rehabilitaciones usando el id proporcionado
+    rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
+    
+    # Obtén el paciente asociado con esta rehabilitación
+    paciente = rehabilitacion.paciente
+    
+    # Obtener el año seleccionado desde los parámetros GET o usar el año actual por defecto
+    selected_year = request.GET.get('year', dt.now().year)
+    selected_year = int(selected_year)
+    
+    # Generar un rango de años desde 2020 hasta el año actual
+    year_range = list(range(2020, dt.now().year + 1))
+    
+    # Obtener las terapias del año seleccionado y de la rehabilitación específica
+    try:
+        terapias = Terapias.objects.filter(
+            rehabilitacionID=rehabilitacion_id,
+            fecha__year=selected_year
+        )
+    except Exception as e:
+        print(f"Error obteniendo terapias: {e}")
+        terapias = []
+    
+    # Crear un diccionario para contar las terapias por mes
+    terapias_por_mes = {month: 0 for month in range(1, 13)}
+    for terapia in terapias:
+        mes = terapia.fecha.month
+        terapias_por_mes[mes] += 1
+
+    # Preparar los datos para el gráfico
+    labels = [dt.strptime(str(month), "%m").strftime("%B") for month in range(1, 13)]
+    data = [terapias_por_mes[month] for month in range(1, 13)]
+
+    # Calcular el total de terapias para el año seleccionado
+    total_terapias = sum(data)
+
+    # Calcular el total de terapias de la rehabilitación específica
+    total_terapias_rehabilitacion = terapias.count()
+
+    # Contar las sesiones finalizadas y no finalizadas
+    try:
+        sesiones_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=True).count()
+        sesiones_no_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=False).count()
+    except Exception as e:
+        print(f"Error contando sesiones: {e}")
+        sesiones_finalizadas = 0
+        sesiones_no_finalizadas = 0
+    
+    # Calcular el porcentaje de éxito promedio
+    try:
+        porcentaje_exito = Sesiones.objects.filter(terapiaID__in=terapias).aggregate(avg_porcentaje=Avg('porcentaje'))['avg_porcentaje'] or 0
+    except Exception as e:
+        print(f"Error calculando porcentaje de éxito: {e}")
+        porcentaje_exito = 0
+
+    context = {
+        'paciente': paciente,
+        'rehabilitacion': rehabilitacion,
+        'rehabilitacion_id': rehabilitacion_id,
+        'terapias_por_mes': terapias_por_mes,
+        'labels': labels,
+        'data': data,
+        'selected_year': selected_year,
+        'year_range': year_range,
+        'total_terapias': total_terapias,
+        'total_terapias_rehabilitacion': total_terapias_rehabilitacion,
+        'porcentaje_exito': porcentaje_exito,
+        'sesiones_finalizadas': sesiones_finalizadas,
+        'sesiones_no_finalizadas': sesiones_no_finalizadas,
+    }
+
+    return render(request, 'reporte_paciente.html', context)
