@@ -5,14 +5,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Reporte de Paciente</title>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <style>
-        /* Tus estilos personalizados */
-    </style>
 </head>
 
 <body>
@@ -64,10 +61,10 @@
         <br><br>
 
         <div class="container mt-5">
-            <h1>Dashboard</h1>
+            <h1>Reporte de Paciente</h1>
 
             <!-- Formulario para seleccionar el año -->
-            <form method="get" action="{% url 'dashboard' %}" class="form-inline mb-4">
+            <form method="get" action="{% url 'reporte_paciente' rehabilitacion_id %}" class="form-inline mb-4">
                 <label for="year" class="mr-2">Seleccionar Año:</label>
                 <select name="year" id="year" class="form-control mr-2">
                     {% for year in year_range %}
@@ -76,6 +73,7 @@
                 </select>
                 <button type="submit" class="btn btn-primary">Actualizar</button>
             </form>
+            
             <div class="row">
                 <div class="col-lg-12 mb-4">
                     <div class="card card-custom">
@@ -88,6 +86,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="row">
                 <div class="col-lg-4 mb-4">
                     <div class="card card-custom">
@@ -97,29 +96,40 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="col-lg-4 mb-4">
                     <div class="card card-custom">
                         <div class="card-body">
-                            <h5 class="card-title">Total de Pacientes</h5>
-                            <p class="display-4">{{ total_pacientes }}</p>
+                            <h5 class="card-title">Total de Terapias de la Rehabilitación</h5>
+                            <p class="display-4">{{ total_terapias_rehabilitacion }}</p>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-lg-4 mb-4">
                     <div class="card card-custom">
                         <div class="card-body">
-                            <h5 class="card-title">Terapias por Motivo</h5>
-                            <div class="chart-container">
-                                <canvas id="terapiasPorMotivo"></canvas>
-                            </div>
+                            <h5 class="card-title">Porcentaje de Éxito</h5>
+                            <p class="display-4">{{ porcentaje_exito|floatformat:2 }}%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Sesiones Finalizadas</h5>
+                            <p class="display-4">{{ sesiones_finalizadas }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Sesiones No Finalizadas</h5>
+                            <p class="display-4">{{ sesiones_no_finalizadas }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-          
         </div>
 
         <!-- Footer -->
@@ -166,8 +176,6 @@
     <script>
         var labels = {{ labels|safe }};
         var data = {{ data|safe }};
-        var motivoLabels = {{ motivo_labels|safe }};
-        var motivoData = {{ motivo_data|safe }};
 
         var terapiasPorMesData = {
             labels: labels,
@@ -195,44 +203,6 @@
         var terapiasPorMesChart = new Chart(
             document.getElementById('terapiasPorMesChart'),
             terapiasPorMesConfig
-        );
-
-        var terapiasPorMotivoData = {
-            labels: motivoLabels,
-            datasets: [{
-                label: 'Número de Terapias',
-                data: motivoData,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
-        };
-
-        var terapiasPorMotivoConfig = {
-            type: 'pie',
-            data: terapiasPorMotivoData,
-            options: {
-                responsive: true
-            }
-        };
-
-        var terapiasPorMotivoChart = new Chart(
-            document.getElementById('terapiasPorMotivo'),
-            terapiasPorMotivoConfig
         );
     </script>
 </body>

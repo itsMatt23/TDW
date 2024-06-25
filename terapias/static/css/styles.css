@@ -111,7 +111,7 @@ body {
     transform: scale(1.1);
 }
 .custom-navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: #02B1F4;
 }
 
 .navbar-nav .nav-link {
@@ -124,11 +124,11 @@ body {
 
 .navbar-nav .dropdown-menu {
     background-color: rgba(2, 177, 244, 0.9); /* Fondo azul claro */
-    color: white; /* Color del texto */
+    color: #0197D4;
 }
 
 .navbar-nav .dropdown-menu .dropdown-item {
-    color: white; /* Color del texto de los elementos */
+    color: rgb(255, 255, 255); /* Color del texto de los elementos */
 }
 
 .navbar-nav .dropdown-menu .dropdown-item:hover {
@@ -137,7 +137,7 @@ body {
 }
 
 .custom-navbar-collapse {
-    background-color: rgba(2, 177, 244, 0.9); /* Fondo azul claro */
+    
     backdrop-filter: blur(10px); /* Desenfoque de fondo */
     padding: 10px; /* Añadir un poco de padding */
     border-radius: 5px; /* Bordes redondeados */
@@ -145,7 +145,7 @@ body {
 
 /* Hacer que las letras sean blancas en el menú colapsado */
 .custom-navbar-collapse .nav-link {
-    color: white !important;
+    color:  #0197D4 !important;
 }
 
 /* Hacer que el botón de cerrar sesión también tenga letras blancas */

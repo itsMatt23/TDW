@@ -12,6 +12,13 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from leap.leap import procesar_toma
 
+import datetime
+from django.db.models.functions import TruncMonth
+
+from django.db.models.functions import ExtractMonth, ExtractYear
+from datetime import datetime as dt
+from django.db.models import Count, Q,Avg
+
 # Renderiza la plantilla index.html
 def home_view(request):
     return render(request, 'index.html') 
@@ -416,3 +423,121 @@ def actualizar_porcentaje(request):
             return JsonResponse({'error': "Sesión no encontrada."}, status=404)
         except ValueError:
             return JsonResponse({'error': "Porcentaje debe ser un número válido."}, status=400)
+
+
+
+##########################Dahsboard
+def dashboard_view(request):
+    year = request.GET.get('year', datetime.datetime.now().year)
+    year = int(year)  # Convertir el año a entero
+    terapias = Terapias.objects.filter(fecha__year=year)
+
+    # Agrupar terapias por mes en Python
+    terapias_por_mes = {}
+    for terapia in terapias:
+        mes = terapia.fecha.month
+        if mes not in terapias_por_mes:
+            terapias_por_mes[mes] = 0
+        terapias_por_mes[mes] += 1
+
+    # Ordenar los resultados por mes
+    sorted_terapias_por_mes = sorted(terapias_por_mes.items())
+
+    labels = [datetime.date(1900, mes, 1).strftime('%B') for mes, _ in sorted_terapias_por_mes]
+    data = [total for _, total in sorted_terapias_por_mes]
+
+    total_terapias = Terapias.objects.count()
+    total_pacientes = Pacientes.objects.count()
+    terapias_por_motivo = Motivos.objects.annotate(total=Count('rehabilitaciones__terapias')).order_by('nombre')
+
+    motivo_labels = [entry.nombre for entry in terapias_por_motivo]
+    motivo_data = [entry.total for entry in terapias_por_motivo]
+    
+    context = {
+        'total_terapias': total_terapias,
+        'total_pacientes': total_pacientes,
+        'labels': labels,
+        'data': data,
+        'motivo_labels': motivo_labels,
+        'motivo_data': motivo_data,
+        'year_range': range(2023, 2035),
+        'selected_year': year,
+    }
+    return render(request, 'dashboard.html', context)
+from django.db import connection
+from django.shortcuts import render, get_object_or_404
+
+import datetime
+def reporte_paciente(request, rehabilitacion_id):
+    # Obtén el objeto Rehabilitaciones usando el id proporcionado
+    rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
+    
+    # Obtén el paciente asociado con esta rehabilitación
+    paciente = rehabilitacion.paciente
+    
+    # Obtener el año seleccionado desde los parámetros GET o usar el año actual por defecto
+    selected_year = request.GET.get('year', dt.now().year)
+    selected_year = int(selected_year)
+    
+    # Generar un rango de años desde 2020 hasta el año actual
+    year_range = list(range(2020, dt.now().year + 1))
+    
+    # Obtener las terapias del año seleccionado y de la rehabilitación específica
+    try:
+        terapias = Terapias.objects.filter(
+            rehabilitacionID=rehabilitacion_id,
+            fecha__year=selected_year
+        )
+    except Exception as e:
+        print(f"Error obteniendo terapias: {e}")
+        terapias = []
+    
+    # Crear un diccionario para contar las terapias por mes
+    terapias_por_mes = {month: 0 for month in range(1, 13)}
+    for terapia in terapias:
+        mes = terapia.fecha.month
+        terapias_por_mes[mes] += 1
+
+    # Preparar los datos para el gráfico
+    labels = [dt.strptime(str(month), "%m").strftime("%B") for month in range(1, 13)]
+    data = [terapias_por_mes[month] for month in range(1, 13)]
+
+    # Calcular el total de terapias para el año seleccionado
+    total_terapias = sum(data)
+
+    # Calcular el total de terapias de la rehabilitación específica
+    total_terapias_rehabilitacion = terapias.count()
+
+    # Contar las sesiones finalizadas y no finalizadas
+    try:
+        sesiones_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=True).count()
+        sesiones_no_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=False).count()
+    except Exception as e:
+        print(f"Error contando sesiones: {e}")
+        sesiones_finalizadas = 0
+        sesiones_no_finalizadas = 0
+    
+    # Calcular el porcentaje de éxito promedio
+    try:
+        porcentaje_exito = Sesiones.objects.filter(terapiaID__in=terapias).aggregate(avg_porcentaje=Avg('porcentaje'))['avg_porcentaje'] or 0
+    except Exception as e:
+        print(f"Error calculando porcentaje de éxito: {e}")
+        porcentaje_exito = 0
+
+    context = {
+        'paciente': paciente,
+        'rehabilitacion': rehabilitacion,
+        'rehabilitacion_id': rehabilitacion_id,
+        'terapias_por_mes': terapias_por_mes,
+        'labels': labels,
+        'data': data,
+        'selected_year': selected_year,
+        'year_range': year_range,
+        'total_terapias': total_terapias,
+        'total_terapias_rehabilitacion': total_terapias_rehabilitacion,
+        'porcentaje_exito': porcentaje_exito,
+        'sesiones_finalizadas': sesiones_finalizadas,
+        'sesiones_no_finalizadas': sesiones_no_finalizadas,
+    }
+
+    return render(request, 'reporte_paciente.html', context)
