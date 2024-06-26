@@ -9,7 +9,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-
 <body>
     <div class="d-flex flex-column min-vh-100">
         <!-- Navbar -->
@@ -18,7 +17,6 @@
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
             </a>
-
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -41,7 +39,6 @@
                         <div class="row">
                             <!-- Card de la izquierda -->
                             <div class="col-md-6">
-        
                                 <div class="card mb-3">
                                     <div class="card-body">
                                         <h5 class="card-title">Resultados</h5>
@@ -49,8 +46,11 @@
                                         <div id="lista-repeticiones" class="list-group scroll-container">
                                             <!-- Repeticiones serán agregadas dinámicamente aquí -->
                                         </div>
+                                        <!-- Contador de repeticiones -->
+                                        <div id="contador-repeticiones" class="mt-3 text-center">
+                                            Repetición <span id="repeticion-actual">1</span> de {{ repeticion }}
+                                        </div>
                                     </div>
-                                    
                                 </div>
                             </div>
                             <!-- Card de la derecha -->
@@ -72,7 +72,6 @@
                                         {% if next_index < sesiones_seleccionadas|length %}
                                         <button type="button" onclick="window.location.reload();" class="btn btn-secondary btn-block mt-3">Reiniciar</button>
                                         <a href="{% url 'show_session' next_index %}" class="btn btn-primary btn-block mt-3">Siguiente</a>
-
                                         {% else %}
                                         <button type="button" onclick="window.location.reload();" class="btn btn-secondary btn-block mt-3">Reiniciar</button>
                                         <a href="{% url 'movimientos' terapiaID.terapiaID %}" class="btn btn-dark btn-block mt-3">Terminar</a>
@@ -87,16 +86,61 @@
         </div>
     </div>
 
+    <!-- Modal de inicio -->
+    <div class="modal fade" id="startModal" tabindex="-1" aria-labelledby="startModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="startModalLabel">Iniciar Repeticiones</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Por favor, inicie con las repeticiones.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Iniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de finalización -->
+    <div class="modal fade" id="endModal" tabindex="-1" aria-labelledby="endModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="endModalLabel">Repeticiones Terminadas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Todas las repeticiones han sido completadas.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('#startModal').modal('show');
+            
             var sesionID = '{{ session_id }}';
-            var num_repeticiones = '{{ repeticion }}';
+            var num_repeticiones = parseInt('{{ repeticion }}');
             var csrfToken = '{{ csrf_token }}';
 
             var totalMovimientosBuenos = 0;
             var totalRepeticiones = 0;
 
             function procesarRepeticion(i) {
+                $('#repeticion-actual').text(i);
+                
                 $.ajax({
                     type: 'POST',
                     url: '{% url "procesar_repeticion" %}',
@@ -124,7 +168,7 @@
 
                         totalRepeticiones++;
 
-                        if (totalRepeticiones === parseInt(num_repeticiones)) {
+                        if (totalRepeticiones === num_repeticiones) {
                             var promedio = totalMovimientosBuenos / totalRepeticiones;
 
                             $('#promedio').text((promedio * 100).toFixed(2) + '%');
@@ -141,6 +185,7 @@
                                 },
                                 success: function(response) {
                                     console.log('Porcentaje actualizado correctamente en la base de datos.');
+                                    $('#endModal').modal('show'); // Mostrar el modal de finalización
                                 },
                                 error: function(xhr, errmsg, err) {
                                     console.log('Error al actualizar el porcentaje en la base de datos:', xhr.status + ": " + xhr.responseText);
@@ -156,7 +201,9 @@
                 });
             }
 
-            procesarRepeticion(1); // Iniciar el proceso de repeticiones
+            $('#startModal').on('hidden.bs.modal', function () {
+                procesarRepeticion(1); // Iniciar el proceso de repeticiones
+            });
         });
     </script>
 </body>
