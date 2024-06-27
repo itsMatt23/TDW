@@ -32,6 +32,47 @@
             color: white !important;
         }
     }
+
+    .btn-reportes {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .btn-reportes:hover {
+        background-color: #5a6268;
+        transform: scale(1.05);
+    }
+
+    .btn-reportes i {
+        margin-right: 5px;
+    }
+
+    .table .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.2rem;
+    }
+
+    .table .btn-info {
+        background-color: #17a2b8;
+        border: none;
+    }
+
+    .table .btn-info:hover {
+        background-color: #138496;
+    }
+
+    .table .btn-danger {
+        background-color: #dc3545;
+        border: none;
+    }
+
+    .table .btn-danger:hover {
+        background-color: #c82333;
+    }
 </style>
 <body>
     <div class="d-flex flex-column min-vh-100">
@@ -99,14 +140,13 @@
                     </form>
                 </div>
             </div>
-
             {% if messages %}
-                <div class="alert alert-danger text-center">
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} text-center">
+                    {{ message }}
                 </div>
-            {% endif %}
+            {% endfor %}
+        {% endif %}
 
             {% if paciente %}
                 <div class="card mb-4">
@@ -168,8 +208,8 @@
                                         <a href="{% url 'terapias' rehabilitacion.rehabilitacionID %}" class="btn btn-info btn-sm">
                                             <i class="fas fa-dumbbell"></i> Terapias
                                         </a>
-                                        <a href="{% url 'reporte_paciente' rehabilitacion.rehabilitacionID %}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-file-alt"></i> Reporte
+                                        <a href="{% url 'reporte_rehabilitacion' rehabilitacion.rehabilitacionID %}" class="btn btn-reportes btn-sm">
+                                            <i class="fas fa-chart-line"></i> Reportes
                                         </a>
                                         <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRehabModal{{ rehabilitacion.rehabilitacionID }}">
                                             <i class="fas fa-trash-alt"></i> Eliminar

@@ -77,27 +77,6 @@
                 <button type="submit" class="btn btn-primary">Actualizar</button>
             </form>
             <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card card-custom">
-                        <div class="card-body">
-                            <h5 class="card-title">Terapias por Mes en el Año {{ selected_year }}</h5>
-                            <div class="chart-container">
-                                <canvas id="terapiasPorMesChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <div class="card card-custom">
-                        <div class="card-body">
-                            <h5 class="card-title">Total de Terapias</h5>
-                            <p class="display-4">{{ total_terapias }}</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-lg-4 mb-4">
                     <div class="card card-custom">
                         <div class="card-body">
@@ -110,16 +89,44 @@
                 <div class="col-lg-4 mb-4">
                     <div class="card card-custom">
                         <div class="card-body">
-                            <h5 class="card-title">Terapias por Motivo</h5>
+                            <h5 class="card-title">Total de Terapeutas</h5>
+                            <p class="display-4">{{ total_fisioterapeutas }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Total de Rehabilitaciones</h5>
+                            <p class="display-4">{{ total_rehabilitaciones }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Rehabilitaciones por Mes en el Año {{ selected_year }}</h5>
                             <div class="chart-container">
-                                <canvas id="terapiasPorMotivo"></canvas>
+                                <canvas id="rehabilitacionesPorMesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom">
+                        <div class="card-body">
+                            <h5 class="card-title">Rehabilitaciones por Motivo</h5>
+                            <div class="chart-container">
+                                <canvas id="rehabilitacionesPorMotivo"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-          
         </div>
 
         <!-- Footer -->
@@ -169,10 +176,10 @@
         var motivoLabels = {{ motivo_labels|safe }};
         var motivoData = {{ motivo_data|safe }};
 
-        var terapiasPorMesData = {
+        var rehabilitacionesPorMesData = {
             labels: labels,
             datasets: [{
-                label: 'Número de Terapias',
+                label: 'Número de Rehabilitaciones',
                 data: data,
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgba(75, 192, 192, 1)',
@@ -180,9 +187,9 @@
             }]
         };
 
-        var terapiasPorMesConfig = {
-            type: 'bar',
-            data: terapiasPorMesData,
+        var rehabilitacionesPorMesConfig = {
+            type: 'line',
+            data: rehabilitacionesPorMesData,
             options: {
                 scales: {
                     y: {
@@ -192,15 +199,15 @@
             }
         };
 
-        var terapiasPorMesChart = new Chart(
-            document.getElementById('terapiasPorMesChart'),
-            terapiasPorMesConfig
+        var rehabilitacionesPorMesChart = new Chart(
+            document.getElementById('rehabilitacionesPorMesChart'),
+            rehabilitacionesPorMesConfig
         );
 
-        var terapiasPorMotivoData = {
+        var rehabilitacionesPorMotivoData = {
             labels: motivoLabels,
             datasets: [{
-                label: 'Número de Terapias',
+                label: 'Número de Rehabilitaciones',
                 data: motivoData,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
@@ -222,17 +229,17 @@
             }]
         };
 
-        var terapiasPorMotivoConfig = {
+        var rehabilitacionesPorMotivoConfig = {
             type: 'pie',
-            data: terapiasPorMotivoData,
+            data: rehabilitacionesPorMotivoData,
             options: {
                 responsive: true
             }
         };
 
-        var terapiasPorMotivoChart = new Chart(
-            document.getElementById('terapiasPorMotivo'),
-            terapiasPorMotivoConfig
+        var rehabilitacionesPorMotivoChart = new Chart(
+            document.getElementById('rehabilitacionesPorMotivo'),
+            rehabilitacionesPorMotivoConfig
         );
     </script>
 </body>

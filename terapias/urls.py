@@ -23,7 +23,7 @@ urlpatterns = [
     path('TerapeutaOpciones/', views.TerapeutaOpciones_view, name='TerapeutaOpciones'),
     path('pacientes/', views.pacientes, name='pacientes'),
     path('fisioterapeutas/', views.fisioterapeutas_view, name='fisioterapeutas'),
-  path('reporte_paciente/<int:rehabilitacion_id>/', views.reporte_paciente, name='reporte_paciente'), ## Nueva vista para el reporte del paciente
+ path('reporte_rehabilitacion/<int:rehabilitacion_id>/', views.reporte_rehabilitacion_view, name='reporte_rehabilitacion'),
 
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('logout/', views.logout_view, name='logout'),  # no cambiar
