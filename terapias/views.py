@@ -23,6 +23,7 @@ from django.db.models import Count, Q,Avg
 def home_view(request):
     return render(request, 'index.html') 
 # Login
+
 def index_view(request):
     if request.method == "POST":
         email = request.POST['username']
@@ -32,24 +33,35 @@ def index_view(request):
         user = authenticate(request, username=email, password=password)
         if user is not None:
             login(request, user)
+            request.session['fisioterapeuta_id'] = None  # Reiniciar fisioterapeuta_id en la sesión
+            print("Usuario de Django autenticado.")
             return JsonResponse({'success': True, 'redirect_url': 'TerapeutaOpciones/'})
         else:
             # Intentar autenticar como Fisioterapeuta
             try:
                 fisioterapeuta = Fisioterapeutas.objects.get(email=email)
                 if fisioterapeuta.contrasena == password:
+                    print(f"Fisioterapeuta encontrado: {fisioterapeuta.cedula}")
                     request.session['fisioterapeuta_id'] = fisioterapeuta.cedula
+                    request.session['is_superuser'] = False
+                    print(f"Fisioterapeuta ID guardado en la sesión: {request.session['fisioterapeuta_id']}")
                     return JsonResponse({'success': True, 'redirect_url': 'TerapeutaOpciones/'})
                 else:
+                    print("Contraseña incorrecta para el fisioterapeuta.")
                     return JsonResponse({'success': False, 'error': 'Usuario o contraseña incorrecta'}, status=400)
             except Fisioterapeutas.DoesNotExist:
+                print("Fisioterapeuta no encontrado.")
                 return JsonResponse({'success': False, 'error': 'Usuario o contraseña incorrecta'}, status=400)
     return render(request, 'index.html')
 
+
 def TerapeutaOpciones_view(request):
     is_superuser = request.user.is_superuser if request.user.is_authenticated else False
+    fisioterapeuta_id = request.session.get('fisioterapeuta_id')
+    print(f"Fisioterapeuta ID almacenado en la sesión: {fisioterapeuta_id}")
     context = {'is_superuser': is_superuser}
     return render(request, 'TerapeutaOpciones.html', context)
+
 
 def logout_view(request):
     logout(request)
@@ -87,12 +99,18 @@ def gestion_paciente(request, cedula):
 ##################################################
 #Gestion de Rehabilitaciones-Terapias-Movimientos#
 #Rehabilitacion
+
 def rehabilitacion_paciente(request):
+    if not request.user.is_authenticated and 'fisioterapeuta_id' not in request.session:
+        return redirect('index')
+
     paciente = None
     rehabilitaciones = None
     motivos = Motivos.objects.all()  # Obtener todos los motivos disponibles
 
     cedula = request.POST.get('cedula', '') or request.GET.get('cedula', '')
+
+    fisioterapeuta_id = request.session.get('fisioterapeuta_id', '') if not request.user.is_authenticated else ''
 
     if request.method == 'POST':
         if 'buscar_paciente' in request.POST:
@@ -107,26 +125,36 @@ def rehabilitacion_paciente(request):
                     messages.error(request, 'Paciente no encontrado. Intenta buscarlo en la lista de pacientes.')
 
         elif 'crear_rehabilitacion' in request.POST:
-            # Procesar creación de rehabilitación para el paciente
-            paciente_id = request.POST.get('paciente_id', '')
-            motivo_id = request.POST.get('motivo_id', '')
+            if request.user.is_superuser:
+                messages.error(request, 'Los administradores no pueden crear rehabilitaciones.')
+            else:
+                # Procesar creación de rehabilitación para el paciente
+                paciente_id = request.POST.get('paciente_id', '')
+                motivo_id = request.POST.get('motivo_id', '')
 
-            if paciente_id and motivo_id:
-                fecha_inicio = datetime.date.today()
-                paciente = get_object_or_404(Pacientes, pk=paciente_id)
-                motivo = get_object_or_404(Motivos, pk=motivo_id)
-                fisioterapeuta = get_object_or_404(Fisioterapeutas, cedula="1850392620")  # Ejemplo de selección de fisioterapeuta
+                if paciente_id and motivo_id:
+                    fecha_inicio = datetime.date.today()
+                    paciente = get_object_or_404(Pacientes, pk=paciente_id)
+                    motivo = get_object_or_404(Motivos, pk=motivo_id)
 
-                rehabilitacion = Rehabilitaciones(
-                    motivoID=motivo,
-                    fechaInicio=fecha_inicio,
-                    fisioterapeuta=fisioterapeuta,
-                    paciente=paciente
-                )
-                rehabilitacion.save()
+                    fisioterapeuta = None
+                    if request.user.is_authenticated:
+                        fisioterapeuta = get_object_or_404(Fisioterapeutas, email=request.user.email)
+                    elif 'fisioterapeuta_id' in request.session:
+                        fisioterapeuta = get_object_or_404(Fisioterapeutas, cedula=request.session['fisioterapeuta_id'])
 
-                # Recargar las rehabilitaciones actualizadas del paciente después de la creación
-                rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+                    if fisioterapeuta:
+                        rehabilitacion = Rehabilitaciones(
+                            motivoID=motivo,
+                            fechaInicio=fecha_inicio,
+                            fisioterapeuta=fisioterapeuta,
+                            paciente=paciente
+                        )
+                        rehabilitacion.save()
+                        messages.success(request, 'Rehabilitación creada exitosamente.', extra_tags='success')
+                        rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+                    else:
+                        messages.error(request, 'No se pudo identificar al fisioterapeuta.')
 
         elif 'eliminar_rehabilitacion' in request.POST:
             # Procesar eliminación de rehabilitación
@@ -135,8 +163,7 @@ def rehabilitacion_paciente(request):
             if rehabilitacion_id and paciente_id:
                 rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
                 rehabilitacion.delete()
-
-                # Recargar las rehabilitaciones actualizadas del paciente después de la eliminación
+                messages.success(request, 'Rehabilitación eliminada exitosamente.')
                 paciente = get_object_or_404(Pacientes, pk=paciente_id)
                 rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
 
@@ -149,7 +176,9 @@ def rehabilitacion_paciente(request):
         'paciente': paciente,
         'rehabilitaciones': rehabilitaciones,
         'motivos': motivos,  # Pasar los motivos al contexto del template
+        'fisioterapeuta_id': fisioterapeuta_id  # Pasar el fisioterapeuta_id al contexto
     })
+
 
 #Terapias
 def terapias(request, rehabilitacion_id):
@@ -249,6 +278,8 @@ def pacientes(request):
         return redirect('pacientes')
 
     return render(request, 'pacientes.html', {'pacientes': pacientes})
+
+
 #Fisioterapeutas
 def fisioterapeutas_view(request):
     if request.method == 'POST':
@@ -427,35 +458,38 @@ def actualizar_porcentaje(request):
 
 
 ##########################Dahsboard
+# Vista del dashboard
 def dashboard_view(request):
     year = request.GET.get('year', datetime.datetime.now().year)
     year = int(year)  # Convertir el año a entero
-    terapias = Terapias.objects.filter(fecha__year=year)
+    rehabilitaciones = Rehabilitaciones.objects.filter(fechaInicio__year=year)
 
-    # Agrupar terapias por mes en Python
-    terapias_por_mes = {}
-    for terapia in terapias:
-        mes = terapia.fecha.month
-        if mes not in terapias_por_mes:
-            terapias_por_mes[mes] = 0
-        terapias_por_mes[mes] += 1
+    # Agrupar rehabilitaciones por mes en Python
+    rehabilitaciones_por_mes = {}
+    for rehabilitacion in rehabilitaciones:
+        mes = rehabilitacion.fechaInicio.month
+        if mes not in rehabilitaciones_por_mes:
+            rehabilitaciones_por_mes[mes] = 0
+        rehabilitaciones_por_mes[mes] += 1
 
     # Ordenar los resultados por mes
-    sorted_terapias_por_mes = sorted(terapias_por_mes.items())
+    sorted_rehabilitaciones_por_mes = sorted(rehabilitaciones_por_mes.items())
 
-    labels = [datetime.date(1900, mes, 1).strftime('%B') for mes, _ in sorted_terapias_por_mes]
-    data = [total for _, total in sorted_terapias_por_mes]
+    labels = [datetime.date(1900, mes, 1).strftime('%B') for mes, _ in sorted_rehabilitaciones_por_mes]
+    data = [total for _, total in sorted_rehabilitaciones_por_mes]
 
-    total_terapias = Terapias.objects.count()
+    total_rehabilitaciones = Rehabilitaciones.objects.count()
     total_pacientes = Pacientes.objects.count()
-    terapias_por_motivo = Motivos.objects.annotate(total=Count('rehabilitaciones__terapias')).order_by('nombre')
+    total_fisioterapeutas = Fisioterapeutas.objects.count()
+    rehabilitaciones_por_motivo = Motivos.objects.annotate(total=Count('rehabilitaciones')).order_by('nombre')
 
-    motivo_labels = [entry.nombre for entry in terapias_por_motivo]
-    motivo_data = [entry.total for entry in terapias_por_motivo]
+    motivo_labels = [entry.nombre for entry in rehabilitaciones_por_motivo]
+    motivo_data = [entry.total for entry in rehabilitaciones_por_motivo]
     
     context = {
-        'total_terapias': total_terapias,
+        'total_rehabilitaciones': total_rehabilitaciones,
         'total_pacientes': total_pacientes,
+        'total_fisioterapeutas': total_fisioterapeutas,
         'labels': labels,
         'data': data,
         'motivo_labels': motivo_labels,
@@ -464,80 +498,48 @@ def dashboard_view(request):
         'selected_year': year,
     }
     return render(request, 'dashboard.html', context)
+
+
 from django.db import connection
 from django.shortcuts import render, get_object_or_404
 
 import datetime
-def reporte_paciente(request, rehabilitacion_id):
-    # Obtén el objeto Rehabilitaciones usando el id proporcionado
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Rehabilitaciones, Terapias, Sesiones
+from django.utils.dateformat import DateFormat
+
+
+def reporte_rehabilitacion_view(request, rehabilitacion_id):
     rehabilitacion = get_object_or_404(Rehabilitaciones, pk=rehabilitacion_id)
-    
-    # Obtén el paciente asociado con esta rehabilitación
-    paciente = rehabilitacion.paciente
-    
-    # Obtener el año seleccionado desde los parámetros GET o usar el año actual por defecto
-    selected_year = request.GET.get('year', dt.now().year)
-    selected_year = int(selected_year)
-    
-    # Generar un rango de años desde 2020 hasta el año actual
-    year_range = list(range(2020, dt.now().year + 1))
-    
-    # Obtener las terapias del año seleccionado y de la rehabilitación específica
-    try:
-        terapias = Terapias.objects.filter(
-            rehabilitacionID=rehabilitacion_id,
-            fecha__year=selected_year
-        )
-    except Exception as e:
-        print(f"Error obteniendo terapias: {e}")
-        terapias = []
-    
-    # Crear un diccionario para contar las terapias por mes
-    terapias_por_mes = {month: 0 for month in range(1, 13)}
+    terapias = Terapias.objects.filter(rehabilitacionID=rehabilitacion)
+
+    terapias_report = []
+    labels = []
+    correctas_data = []
+    incorrectas_data = []
+
     for terapia in terapias:
-        mes = terapia.fecha.month
-        terapias_por_mes[mes] += 1
-
-    # Preparar los datos para el gráfico
-    labels = [dt.strptime(str(month), "%m").strftime("%B") for month in range(1, 13)]
-    data = [terapias_por_mes[month] for month in range(1, 13)]
-
-    # Calcular el total de terapias para el año seleccionado
-    total_terapias = sum(data)
-
-    # Calcular el total de terapias de la rehabilitación específica
-    total_terapias_rehabilitacion = terapias.count()
-
-    # Contar las sesiones finalizadas y no finalizadas
-    try:
-        sesiones_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=True).count()
-        sesiones_no_finalizadas = Sesiones.objects.filter(terapiaID__in=terapias, estado=False).count()
-    except Exception as e:
-        print(f"Error contando sesiones: {e}")
-        sesiones_finalizadas = 0
-        sesiones_no_finalizadas = 0
-    
-    # Calcular el porcentaje de éxito promedio
-    try:
-        porcentaje_exito = Sesiones.objects.filter(terapiaID__in=terapias).aggregate(avg_porcentaje=Avg('porcentaje'))['avg_porcentaje'] or 0
-    except Exception as e:
-        print(f"Error calculando porcentaje de éxito: {e}")
-        porcentaje_exito = 0
+        sesiones = Sesiones.objects.filter(terapiaID=terapia)
+        correctas = sum(1 for sesion in sesiones if sesion.estado)
+        incorrectas = sum(1 for sesion in sesiones if not sesion.estado)
+        
+        labels.append(DateFormat(terapia.fecha).format('Y-m-d'))
+        correctas_data.append(correctas)
+        incorrectas_data.append(incorrectas)
+        
+        terapias_report.append({
+            'terapia': terapia,
+            'correctas': correctas,
+            'incorrectas': incorrectas
+        })
 
     context = {
-        'paciente': paciente,
         'rehabilitacion': rehabilitacion,
-        'rehabilitacion_id': rehabilitacion_id,
-        'terapias_por_mes': terapias_por_mes,
+        'terapias_report': terapias_report,
         'labels': labels,
-        'data': data,
-        'selected_year': selected_year,
-        'year_range': year_range,
-        'total_terapias': total_terapias,
-        'total_terapias_rehabilitacion': total_terapias_rehabilitacion,
-        'porcentaje_exito': porcentaje_exito,
-        'sesiones_finalizadas': sesiones_finalizadas,
-        'sesiones_no_finalizadas': sesiones_no_finalizadas,
+        'correctas_data': correctas_data,
+        'incorrectas_data': incorrectas_data
     }
-
-    return render(request, 'reporte_paciente.html', context)
+    return render(request, 'reporte_rehabilitacion.html', context)
