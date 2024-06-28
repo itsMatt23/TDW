@@ -353,7 +353,7 @@ def gestion_movimiento(request):
 #Actualizar Motivos
 def gestion_motivo(request):
     motivos = Motivos.objects.all()
-    crear_motivo = True  # Puedes ajustar la lógica para determinar cuándo mostrar el botón de crear
+    crear_motivo = True
 
     if request.method == 'POST':
         if 'crear' in request.POST:  # Verificamos si se está creando un nuevo motivo
