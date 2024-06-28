@@ -95,10 +95,33 @@
         <br><br>
 
         <div class="container mt-5">
-            <h1 class="mb-4">Reporte de Rehabilitación</h1>
-            <h2>Paciente: {{ rehabilitacion.paciente.nombre1 }} {{ rehabilitacion.paciente.apellido1 }}</h2>
-            <h3>Motivo: {{ rehabilitacion.motivoID.nombre }}</h3>
-            <h4>Fecha de Inicio: {{ rehabilitacion.fechaInicio }}</h4>
+            <div class="card mb-4">
+                <div class="card-header text-Dark">Reporte de Rehabilitación</div>
+                <div class="card-body">
+                    <h5 class="card-title">Rehabilitacion {{ rehabilitacion.rehabilitacionID }}</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Motivo:</strong> {{ rehabilitacion.motivoID.nombre }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Paciente:</strong> {{ rehabilitacion.paciente.nombre1 }} {{ rehabilitacion.paciente.apellido1 }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Terapeuta:</strong> Dr. {{ rehabilitacion.fisioterapeuta.apellido }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Fecha:</strong> {{ rehabilitacion.fechaInicio }}
+                        </li>
+                    </ul>
+
+                    <div class="text-center mb-4" style="padding-top: 10px;">
+                        <a href="{% url 'gestion_paciente' rehabilitacion.paciente_id %}" class="btn btn-secondary">
+                            Volver a atrás
+                        </a>
+                    </div>                  
+                </div>
+            </div>
+
 
             <!-- Tarjetas de resumen -->
             <div class="row mt-4">
@@ -236,8 +259,6 @@
                     config2
                 );
             </script>
-
-            <a href="{% url 'rehabilitacion_paciente' %}" class="btn btn-primary mt-4">Regresar</a>
         </div>
 
         <!-- Footer -->

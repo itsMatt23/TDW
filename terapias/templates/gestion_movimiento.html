@@ -157,15 +157,16 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                {% if not crear_movimiento %}
                 <div class="text-center mb-4" style="padding-top: 10px;">
                     <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
                 </div>
+                {% endif %}
             </div>
         </div>
 
-
-
-
+        <!-- Modal de Creación -->
         <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -176,7 +177,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form method="post" action="{% url 'gestion_movimiento' %}">
+                        <form id="createForm" method="post" action="{% url 'gestion_movimiento' %}">
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="nombre">Nombre:</label>
@@ -241,3 +242,29 @@
 </body>
 
 </html>
+
+<script>
+    document.getElementById('createForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Evita el envío del formulario para manejarlo con JavaScript
+        var form = event.target;
+
+        // Crear una solicitud de AJAX para enviar el formulario
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Recargar la página después de una respuesta exitosa
+                location.reload();
+            }
+        };
+
+        // Obtener los datos del formulario
+        var formData = new FormData(form);
+        var encodedData = new URLSearchParams(formData).toString();
+
+        xhr.send(encodedData);
+    });
+</script>
