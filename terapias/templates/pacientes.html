@@ -82,6 +82,12 @@
                 color: white !important;
             }
         }
+
+        .btn-custom {
+            font-size: 15px; /* Tamaño de fuente más pequeño */
+            padding: 1px 5px; /* Espaciado interior reducido */
+        }
+
     </style>
 </head>
 <body>
@@ -184,16 +190,21 @@
                                     <td>{{ paciente.celular }}</td>
                                     <td>{{ paciente.direccion }}</td>
                                     <td>
-                                        <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal-{{ paciente.cedula }}">
+                                        <button class="btn btn-warning btn-custom" data-toggle="modal" data-target="#updateModal-{{ paciente.cedula }}">
                                             <i class="fas fa-edit"></i> Actualizar
                                         </button>
-                                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal-{{ paciente.cedula }}">
+                                        <button class="btn btn-danger btn-custom" data-toggle="modal" data-target="#deleteModal-{{ paciente.cedula }}">
                                             <i class="fas fa-trash-alt"></i> Eliminar
                                         </button>
-                                        <a href="{% url 'gestion_paciente' paciente.cedula %}" class="btn btn-primary">
+                                        <a href="{% url 'gestion_paciente' paciente.cedula %}" class="btn btn-primary btn-custom">
                                             <i class="fas fa-procedures"></i> Rehabilitaciones
                                         </a>
+                                        <a href="{% url 'nuevo_reporte_paciente' paciente.cedula %}" class="btn btn-primary btn-custom">
+                                            <i class="fas fa-chart-line"></i> Ver Reporte
+                                        </a>
                                     </td>
+                                    
+                                    
                                 </tr>
 
                                 <!-- Update Modal -->

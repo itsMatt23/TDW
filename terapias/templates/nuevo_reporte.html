@@ -95,7 +95,22 @@
         <br><br>
 
         <div class="container mt-5">
-            <h2>Reporte de Rehabilitación - {{ paciente.nombre1 }} {{ paciente.apellido1 }}</h2>
+            <div class="card mb-4">
+                <div class="card-header text-Dark">Reporte de Rehabilitación</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Paciente:</strong> {{ paciente.nombre1 }} {{ paciente.apellido1 }}
+                        </li>
+                    </ul>
+
+                    <div class="text-center mb-4" style="padding-top: 10px;">                        
+                        <div class="text-center mb-4" style="padding-top: 10px;">
+                            <button onclick="window.history.back()" class="btn btn-secondary">Volver a atrás</button>
+                        </div>
+                    </div>                  
+                </div>
+            </div>
 
             <!-- Formulario de Filtro -->
             <form method="get" class="mb-4">
