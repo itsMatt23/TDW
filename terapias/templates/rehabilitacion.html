@@ -140,13 +140,6 @@
                     </form>
                 </div>
             </div>
-            {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} text-center">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
 
             {% if paciente %}
                 <div class="card mb-4">
@@ -186,6 +179,13 @@
                 </div>
 
                 <h3 class="text-left">Lista de Rehabilitaciones</h3>
+                {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                {% endif %}
                 <table class="table table-striped">
                     <thead>
                         <tr>

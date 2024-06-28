@@ -522,7 +522,8 @@ def reporte_rehabilitacion_view(request, rehabilitacion_id):
 
     for terapia in terapias:
         sesiones = Sesiones.objects.filter(terapiaID=terapia)
-        correctas = sum(1 for sesion in sesiones if sesion.estado)
+        correctas = sum(1 for sesion in sesiones if sesion.porcentaje>50)
+        
         incorrectas = sum(1 for sesion in sesiones if not sesion.estado)
         
         labels.append(DateFormat(terapia.fecha).format('Y-m-d'))
@@ -543,3 +544,74 @@ def reporte_rehabilitacion_view(request, rehabilitacion_id):
         'incorrectas_data': incorrectas_data
     }
     return render(request, 'reporte_rehabilitacion.html', context)
+
+
+
+from django.core.paginator import Paginator
+
+def nuevo_reporte_view(request, cedula):
+    paciente = get_object_or_404(Pacientes, cedula=cedula)
+    motivos = Motivos.objects.all()
+    movimientos = Movimientos.objects.all()
+
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+    motivo_id = request.GET.get('motivo_id', '')
+    movimiento_id = request.GET.get('movimiento_id', '')
+
+    rehabilitaciones = Rehabilitaciones.objects.filter(paciente=paciente)
+
+    if motivo_id:
+        rehabilitaciones = rehabilitaciones.filter(motivoID=motivo_id)
+
+    terapias_report = []
+    labels = []
+    correctas_data = []
+    incorrectas_data = []
+
+    for rehabilitacion in rehabilitaciones:
+        terapias = Terapias.objects.filter(rehabilitacionID=rehabilitacion)
+
+        if fecha_inicio:
+            terapias = terapias.filter(fecha__gte=fecha_inicio)
+        if fecha_fin:
+            terapias = terapias.filter(fecha__lte=fecha_fin)
+
+        for terapia in terapias:
+            sesiones = Sesiones.objects.filter(terapiaID=terapia)
+            if movimiento_id:
+                sesiones = sesiones.filter(movimientoID=movimiento_id)
+
+            correctas = sum(1 for sesion in sesiones if sesion.porcentaje > 50)
+            incorrectas = sum(1 for sesion in sesiones if not sesion.estado)
+
+            labels.append(DateFormat(terapia.fecha).format('Y-m-d'))
+            correctas_data.append(correctas)
+            incorrectas_data.append(incorrectas)
+
+            terapias_report.append({
+                'terapia': terapia,
+                'correctas': correctas,
+                'incorrectas': incorrectas
+            })
+
+    # Implementar paginación
+    paginator = Paginator(terapias_report, 10)  # 10 reportes por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'paciente': paciente,
+        'rehabilitaciones': rehabilitaciones,
+        'page_obj': page_obj,
+        'labels': labels,
+        'correctas_data': correctas_data,
+        'incorrectas_data': incorrectas_data,
+        'motivos': motivos,
+        'movimientos': movimientos,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'motivo_id': motivo_id,
+        'movimiento_id': movimiento_id
+    }
+    return render(request, 'nuevo_reporte.html', context)

@@ -17,6 +17,7 @@ urlpatterns = [
 
     path('/movimientos/editar/', views.gestion_movimiento, name='gestion_movimiento'), #Agregar y editar Movimientos
     path('gestion_motivo/', views.gestion_motivo, name='gestion_motivo'), #Agregar y editar Motivos
+ path('reporte_paciente/<str:cedula>/', views.nuevo_reporte_view, name='nuevo_reporte_paciente'),
 
     path('index/', views.index_view, name='index'),  # no cambiar
 
