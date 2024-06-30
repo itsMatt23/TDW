@@ -86,8 +86,8 @@
 </head>
 <body>
     <div class="d-flex flex-column min-vh-100">
-          <!-- Navbar -->
-          <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
             <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
                 <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
                 Terapias
@@ -112,7 +112,6 @@
                             {% endif %}
                         </div>
                     </li>
-                 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Gestión
@@ -194,6 +193,12 @@
                                         <a href="{% url 'gestion_paciente' paciente.cedula %}" class="btn btn-primary">
                                             <i class="fas fa-procedures"></i> Rehabilitaciones
                                         </a>
+                                      
+                                            <a href="{% url 'nuevo_reporte_paciente' paciente.cedula %}" class="btn btn-primary">
+                                                <i class="fas fa-chart-line"></i> Ver Reporte
+                                            </a>
+                                      
+                                   
                                     </td>
                                 </tr>
 

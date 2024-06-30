@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Rehabilitación</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .card-custom {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-light-success {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+        }
+
+        .bg-light-danger {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .bg-light-info {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+        }
+
+        .chart-container {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .chart-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+            <a class="navbar-brand text-celeste" href="{% url 'TerapeutaOpciones' %}">
+                <img src="{% static 'imagenes/logoempresa.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                Terapias
+            </a>
+            <button class="navbar-toggler custom-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse custom-navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'TerapeutaOpciones' %}">Inicio</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownUsuarios" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Usuarios
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
+                            <a class="dropdown-item" href="{% url 'pacientes' %}">Pacientes</a>
+                            {% if is_superuser %}
+                            <a class="dropdown-item" href="{% url 'fisioterapeutas' %}">Terapeutas</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-celeste" href="#" id="navbarDropdownGestion" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Gestión
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+                            <a class="dropdown-item" href="{% url 'rehabilitacion_paciente' %}">Rehabilitación</a>
+                            <a class="dropdown-item" href="{% url 'gestion_motivo' %}">Motivos</a>
+                            <a class="dropdown-item" href="{% url 'gestion_movimiento' %}">Movimientos</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-celeste" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-celeste text-white" href="#" data-toggle="modal" data-target="#logoutModal">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <br><br>
+
+        <div class="container mt-5">
+            <h1 class="mb-4">Reporte de Rehabilitación</h1>
+            <h2>Paciente: {{ rehabilitacion.paciente.nombre1 }} {{ rehabilitacion.paciente.apellido1 }}</h2>
+            <h3>Motivo: {{ rehabilitacion.motivoID.nombre }}</h3>
+            <h4>Fecha de Inicio: {{ rehabilitacion.fechaInicio }}</h4>
+
+            <!-- Tarjetas de resumen -->
+            <div class="row mt-4">
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom bg-light-success mb-3">
+                        <div class="card-header">Sesiones Correctas</div>
+                        <div class="card-body">
+                            <h5 class="card-title" id="totalCorrectas"></h5>
+                            <p class="card-text" id="porcentajeCorrectas"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom bg-light-danger mb-3">
+                        <div class="card-header">Sesiones Incorrectas</div>
+                        <div class="card-body">
+                            <h5 class="card-title" id="totalIncorrectas"></h5>
+                            <p class="card-text" id="porcentajeIncorrectas"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card card-custom bg-light-info mb-3">
+                        <div class="card-header">Promedio</div>
+                        <div class="card-body">
+                            <h5 class="card-title" id="promedio"></h5>
+                            <p class="card-text">Promedio de sesiones correctas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container mb-4">
+                <canvas id="terapiasChart" width="400" height="200"></canvas>
+            </div>
+
+
+            <div class="chart-container mb-4">
+                <canvas id="terapiasChart2" width="400" height="200"></canvas>
+            </div>
+
+            <script>
+                // Datos proporcionados desde Django
+                const labels = {{ labels|safe }};
+                const correctasData = {{ correctas_data|safe }};
+                const incorrectasData = {{ incorrectas_data|safe }};
+                
+                // Calcular totales y porcentajes
+                const totalCorrectas = correctasData.reduce((a, b) => a + b, 0);
+                const totalIncorrectas = incorrectasData.reduce((a, b) => a + b, 0);
+                const totalcorinc = totalCorrectas+totalIncorrectas;
+                const totalSesiones = totalCorrectas + totalIncorrectas;
+                const promedio = (totalCorrectas / totalcorinc).toFixed(2);
+                const porcentajeCorrectas = ((totalCorrectas / totalSesiones) * 100).toFixed(2) + '%';
+                const porcentajeIncorrectas = ((totalIncorrectas / totalSesiones) * 100).toFixed(2) + '%';
+
+                // Asignar valores a las tarjetas
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('totalCorrectas').innerText = totalCorrectas;
+                    document.getElementById('totalIncorrectas').innerText = totalIncorrectas;
+                    document.getElementById('promedio').innerText = promedio;
+                    document.getElementById('porcentajeCorrectas').innerText = `(${porcentajeCorrectas}) de las sesiones son correctas.`;
+                    document.getElementById('porcentajeIncorrectas').innerText = `(${porcentajeIncorrectas}) de las sesiones son incorrectas.`;
+                });
+
+                const data = {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sesiones Correctas',
+                            data: correctasData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        },
+                        {
+                            label: 'Sesiones Incorrectas',
+                            data: incorrectasData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        }
+                    ]
+                };
+                const data2 = {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sesiones Correctas',
+                            data: correctasData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        }
+                    ]
+                };
+
+                const config = {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Reporte de Sesiones de Terapia'
+                            }
+                        }
+                    }
+                };
+
+                const config2 = {
+                    type: 'line',
+                    data: data2,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Reporte de Sesiones de Terapia'
+                            }
+                        }
+                    }
+                };
+
+                const myChart = new Chart(
+                    document.getElementById('terapiasChart'),
+                    config
+                );
+                const myChart2 = new Chart(
+                    document.getElementById('terapiasChart2'),
+                    config2
+                );
+            </script>
+
+            <a href="{% url 'rehabilitacion_paciente' %}" class="btn btn-primary mt-4">Regresar</a>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-celeste text-center text-lg-start mt-5 py-3">
+            <div class="container p-4">
+                <div class="row">
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <h4 class="text-uppercase text-white">Síguenos en nuestras redes sociales!</h4>
+                        <a href="#"><img src="{% static 'imagenes/facebook.png' %}" alt="Facebook" width="70" height="70" /></a>
+                        <a href="#"><img src="{% static 'imagenes/twitter.png' %}" alt="Twitter" width="92" height="92" /></a>
+                        <a href="#"><img src="{% static 'imagenes/instagram.png' %}" alt="Instagram" width="110" height="80" /></a>
+                    </div>
+                    <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                        <p class="text-white">&copy; 2024 Terapias. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Modal: Cerrar Sesión -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">¿Listo para salir?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecciona "Cerrar Sesión" a continuación si estás listo para finalizar tu sesión actual.</div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                        <a class="btn btn-primary" href="{% url 'logout' %}">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
+</body>
+
+</html>
