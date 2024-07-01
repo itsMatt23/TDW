@@ -108,9 +108,17 @@
                     </div>
                     <div class="col">
                         <select class="form-control" name="motivo_id">
-                            <option value="">Todos</option>
+                            <option value="">Seleccione Motivo</option>
                             {% for motivo in motivos %}
                                 <option value="{{ motivo.pk }}" {% if motivo.pk|stringformat:"s" == motivo_id %}selected{% endif %}>{{ motivo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <select class="form-control" name="movimiento_id">
+                            <option value="">Seleccione Movimiento</option>
+                            {% for movimiento in movimientos %}
+                                <option value="{{ movimiento.pk }}" {% if movimiento.pk|stringformat:"s" == movimiento_id %}selected{% endif %}>{{ movimiento.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -151,17 +159,6 @@
                 </div>
             </div>
 
-
-            <!-- Gráficos -->
-            <div class="chart-container mb-4">
-                <canvas id="terapiasChart" width="400" height="200"></canvas>
-            </div>
-
-            <div class="chart-container mb-4">
-                <canvas id="terapiasChart2" width="400" height="200"></canvas>
-            </div>
-
-
             <!-- Tabla de Rehabilitaciones -->
             <table class="table table-striped">
                 <thead>
@@ -189,10 +186,10 @@
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}">Primero</a>
+                            <a class="page-link" href="?page=1{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Primero</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}">Anterior</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Anterior</a>
                         </li>
                     {% endif %}
                     <li class="page-item disabled">
@@ -200,15 +197,23 @@
                     </li>
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}">Siguiente</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Siguiente</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}">Último</a>
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Último</a>
                         </li>
                     {% endif %}
                 </ul>
             </nav>
 
+            <!-- Gráficos -->
+            <div class="chart-container mb-4">
+                <canvas id="terapiasChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-container mb-4">
+                <canvas id="terapiasChart2" width="400" height="200"></canvas>
+            </div>
 
             <script>
                 // Datos proporcionados desde Django
