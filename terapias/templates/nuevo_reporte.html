@@ -95,32 +95,38 @@
         <br><br>
 
         <div class="container mt-5">
-            <div class="card mb-4">
-                <div class="card-header text-Dark">Reporte de Rehabilitación</div>
-                <div class="card-body">
-                    <h5 class="card-title">Rehabilitacion {{ rehabilitacion.rehabilitacionID }}</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <strong>Motivo:</strong> {{ rehabilitacion.motivoID.nombre }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Paciente:</strong> {{ rehabilitacion.paciente.nombre1 }} {{ rehabilitacion.paciente.apellido1 }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Terapeuta:</strong> Dr. {{ rehabilitacion.fisioterapeuta.apellido }}
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Fecha:</strong> {{ rehabilitacion.fechaInicio }}
-                        </li>
-                    </ul>
+            <h2>Reporte de Rehabilitación - {{ paciente.nombre1 }} {{ paciente.apellido1 }}</h2>
 
-                    <div class="text-center mb-4" style="padding-top: 10px;">
-                        <a href="{% url 'gestion_paciente' rehabilitacion.paciente_id %}" class="btn btn-secondary">
-                            Volver a atrás
-                        </a>
-                    </div>                  
+            <!-- Formulario de Filtro -->
+            <form method="get" class="mb-4">
+                <div class="form-row">
+                    <div class="col">
+                        <input type="date" class="form-control" name="fecha_inicio" value="{{ fecha_inicio }}" placeholder="Fecha Inicio">
+                    </div>
+                    <div class="col">
+                        <input type="date" class="form-control" name="fecha_fin" value="{{ fecha_fin }}" placeholder="Fecha Fin">
+                    </div>
+                    <div class="col">
+                        <select class="form-control" name="motivo_id">
+                            <option value="">Seleccione Motivo</option>
+                            {% for motivo in motivos %}
+                                <option value="{{ motivo.pk }}" {% if motivo.pk|stringformat:"s" == motivo_id %}selected{% endif %}>{{ motivo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <select class="form-control" name="movimiento_id">
+                            <option value="">Seleccione Movimiento</option>
+                            {% for movimiento in movimientos %}
+                                <option value="{{ movimiento.pk }}" {% if movimiento.pk|stringformat:"s" == movimiento_id %}selected{% endif %}>{{ movimiento.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                    </div>
                 </div>
-            </div>
+            </form>
 
             <!-- Tarjetas de resumen -->
             <div class="row mt-4">
@@ -153,10 +159,57 @@
                 </div>
             </div>
 
+            <!-- Tabla de Rehabilitaciones -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Terapia</th>
+                        <th>Fecha</th>
+                        <th>Correctas</th>
+                        <th>Incorrectas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reporte in page_obj %}
+                        <tr>
+                            <td>{{ reporte.terapia.terapiaID }}</td>
+                            <td>{{ reporte.terapia.fecha }}</td>
+                            <td>{{ reporte.correctas }}</td>
+                            <td>{{ reporte.incorrectas }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Controles de Paginación -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Primero</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if fecha_inicio %}&fecha_inicio={{ fecha_inicio }}{% endif %}{% if fecha_fin %}&fecha_fin={{ fecha_fin }}{% endif %}{% if motivo_id %}&motivo_id={{ motivo_id }}{% endif %}{% if movimiento_id %}&movimiento_id={{ movimiento_id }}{% endif %}">Último</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <!-- Gráficos -->
             <div class="chart-container mb-4">
                 <canvas id="terapiasChart" width="400" height="200"></canvas>
             </div>
-
 
             <div class="chart-container mb-4">
                 <canvas id="terapiasChart2" width="400" height="200"></canvas>
@@ -171,9 +224,8 @@
                 // Calcular totales y porcentajes
                 const totalCorrectas = correctasData.reduce((a, b) => a + b, 0);
                 const totalIncorrectas = incorrectasData.reduce((a, b) => a + b, 0);
-                const totalcorinc = totalCorrectas+totalIncorrectas;
                 const totalSesiones = totalCorrectas + totalIncorrectas;
-                const promedio = (totalCorrectas / totalcorinc).toFixed(2);
+                const promedio = (totalCorrectas / totalSesiones).toFixed(2);
                 const porcentajeCorrectas = ((totalCorrectas / totalSesiones) * 100).toFixed(2) + '%';
                 const porcentajeIncorrectas = ((totalIncorrectas / totalSesiones) * 100).toFixed(2) + '%';
 
@@ -259,6 +311,7 @@
                 );
             </script>
 
+            <a href="{% url 'rehabilitacion_paciente' %}" class="btn btn-primary mt-4">Regresar</a>
         </div>
 
         <!-- Footer -->
